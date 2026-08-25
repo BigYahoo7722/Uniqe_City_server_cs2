@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://bigyahoo7722.github.io/Uniqe_City_server_cs2/sitemap.xml
