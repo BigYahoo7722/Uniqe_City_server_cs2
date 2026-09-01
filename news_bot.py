@@ -55,6 +55,7 @@ import feedparser
 from dateutil import parser as dateparser
 from bs4 import BeautifulSoup
 from deep_translator import GoogleTranslator
+import a2s
 
 # Liquipedia از هرکسی که به API/سایتشون درخواست می‌زنه می‌خواد یه User-Agent
 # مشخص و قابل‌شناسایی معرفی کنه (طبق قوانین استفاده‌شون).
@@ -107,6 +108,11 @@ LIQUIPEDIA_MATCHES_URL = "https://liquipedia.net/counterstrike/Liquipedia:Matche
 # صفحه‌ی رنکینگ جهانی تیم‌ها در HLTV
 HLTV_RANKING_URL = "https://www.hltv.org/ranking/teams"
 
+# آدرس واقعی سرور بازی CS2 (همون آدرسی که تو popup اتصال به سرور استفاده میشه)
+# برای گرفتن وضعیت زنده (تعداد بازیکن، مپ فعلی) با پروتکل A2S_INFO
+GAME_SERVER_IP = "5.57.32.32"
+GAME_SERVER_PORT = 28208
+
 # کلیدواژه‌هایی که نشون میدن خبر درباره‌ی یک تورنومنت/رویداد رقابتیه
 TOURNAMENT_KEYWORDS = [
     "major", "iem", "esl pro league", "blast", "pgl", "cologne", "katowice",
@@ -154,17 +160,14 @@ def translate_to_fa(text: str) -> str:
 
 def extract_image(entry) -> str:
     """تلاش می‌کنه یک عکس مرتبط از فیلدهای مختلف RSS استخراج کنه."""
-    # media_content / media_thumbnail (فرمت رایج RSS رسانه‌ای)
     for field in ("media_content", "media_thumbnail"):
         media = entry.get(field)
         if media and isinstance(media, list) and media[0].get("url"):
             return media[0]["url"]
-    # enclosure
     if entry.get("links"):
         for link in entry["links"]:
             if link.get("type", "").startswith("image"):
                 return link.get("href", "")
-    # عکس داخل خود summary/description (اولین تگ <img>)
     html_blob = entry.get("summary", "") or entry.get("description", "")
     m = re.search(r'<img[^>]+src="([^"]+)"', html_blob)
     if m:
@@ -291,8 +294,6 @@ def fetch_liquipedia_matches() -> list:
             raise RuntimeError("پاسخ Liquipedia خالی بود")
 
         soup = BeautifulSoup(html, "html.parser")
-        # ساختار معمول جدول‌های مسابقه‌ی Liquipedia: هر ردیف مسابقه معمولاً
-        # یک بلوک با کلاس‌هایی شامل نام دو تیم و اسکور/زمانه.
         match_blocks = soup.select(".match, .brkts-matchlist-match, .infobox_matches_content")
         for block in match_blocks[:MAX_ITEMS_PER_SOURCE]:
             teams = [t.get_text(strip=True) for t in block.select(".team-template-text")]
@@ -307,8 +308,6 @@ def fetch_liquipedia_matches() -> list:
             tournament_name = tournament_el.get_text(strip=True) if tournament_el else "CS2"
 
             title = f"{team1} vs {team2} — {tournament_name}"
-            # برای external_id چون این صفحه لینک اختصاصی به ازای هر مسابقه نداره،
-            # از ترکیب نام تیم‌ها + تورنومنت هش می‌گیریم.
             uniq_key = f"{team1}|{team2}|{tournament_name}"
 
             items.append({
@@ -365,6 +364,52 @@ def fetch_hltv_rankings() -> list:
     return rankings
 
 
+def fetch_server_status() -> dict:
+    """با پروتکل A2S_INFO مستقیم از خود سرور بازی CS2 وضعیت زنده می‌گیره:
+    تعداد بازیکن آنلاین، حداکثر ظرفیت، اسم مپ فعلی و اسم سرور. این یه پروتکل
+    رسمی و پایدار Source Engine هست (نه اسکرپ HTML)، پس نسبتاً قابل‌اعتماده —
+    ولی چون یه درخواست UDP به IP سرور بازیه، ممکنه با فایروال/محدودیت شبکه‌ی
+    GitHub Actions به مشکل بخوره؛ برای همین best-effort با timeout کوتاهه و
+    اگه شکست بخوره، فقط 'آفلاین' ثبت میشه، ربات متوقف نمیشه."""
+    try:
+        log.info("در حال دریافت وضعیت زنده‌ی سرور بازی (%s:%s) ...", GAME_SERVER_IP, GAME_SERVER_PORT)
+        info = a2s.info((GAME_SERVER_IP, GAME_SERVER_PORT), timeout=5.0)
+        status = {
+            "online": True,
+            "players": info.player_count,
+            "max_players": info.max_players,
+            "map_name": info.map_name,
+            "server_name": info.server_name,
+        }
+        log.info("  → سرور آنلاینه: %d/%d بازیکن، مپ %s",
+                  status["players"], status["max_players"], status["map_name"])
+        return status
+    except Exception as exc:  # noqa: BLE001
+        log.warning("وضعیت سرور بازی گرفته نشد (شاید سرور خاموشه یا شبکه بسته‌ست، best-effort): %s", exc)
+        return {"online": False, "players": None, "max_players": None, "map_name": None, "server_name": None}
+
+
+def push_server_status(status: dict) -> None:
+    """یه ردیف تک (id=1) رو همیشه بازنویسی می‌کنه — جدول cs_server_status
+    همیشه فقط آخرین وضعیت رو نگه می‌داره، نه تاریخچه."""
+    if not SUPABASE_URL or not SUPABASE_SERVICE_KEY:
+        log.error("SUPABASE_URL یا SUPABASE_SERVICE_KEY تنظیم نشده؛ وضعیت سرور ارسال نشد.")
+        return
+    endpoint = f"{SUPABASE_URL}/rest/v1/cs_server_status?on_conflict=id"
+    headers = {
+        "apikey": SUPABASE_SERVICE_KEY,
+        "Authorization": f"Bearer {SUPABASE_SERVICE_KEY}",
+        "Content-Type": "application/json",
+        "Prefer": "resolution=merge-duplicates,return=minimal",
+    }
+    payload = dict(status, id=1, updated_at=datetime.now(timezone.utc).isoformat())
+    resp = requests.post(endpoint, headers=headers, json=[payload], timeout=30)
+    if resp.status_code >= 300:
+        log.error("خطا در ثبت وضعیت سرور (%d): %s", resp.status_code, resp.text[:300])
+    else:
+        log.info("✔ وضعیت سرور بازی به‌روزرسانی شد")
+
+
 def push_to_supabase(records: list) -> None:
     """با upsert (on_conflict) رکوردها رو داخل Supabase ثبت می‌کنه.
     اگه رکورد با همون (source_name, external_id) قبلاً وجود داشته باشه، به‌روزرسانی میشه نه تکرار."""
@@ -383,7 +428,6 @@ def push_to_supabase(records: list) -> None:
         "Prefer": "resolution=merge-duplicates,return=minimal",
     }
 
-    # ارسال دسته‌ای (batch) به‌جای تک‌تک، برای کاهش تعداد درخواست‌ها
     batch_size = 50
     for i in range(0, len(records), batch_size):
         batch = records[i:i + batch_size]
@@ -441,6 +485,9 @@ def main():
 
     rankings = fetch_hltv_rankings()
     push_rankings_to_supabase(rankings)
+
+    server_status = fetch_server_status()
+    push_server_status(server_status)
 
     log.info("اجرای ربات با موفقیت تمام شد.")
 
