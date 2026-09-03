@@ -1,0 +1,2362 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>یونیک سیتی — سرور CS2</title>
+<meta name="description" content="کامیونیتی سرور CS2 یونیک سیتی — بهترین کامیونیتی برای بازیکنانی که بیشتر از یک بازی معمولی می‌خوان. اخبار، تورنومنت‌ها، رنکینگ تیم‌ها و اتصال مستقیم به سرور.">
+
+<!-- ── FAVICON / PWA ── -->
+<link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="icons/favicon-64.png" sizes="64x64" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0b0e10">
+
+<!-- ── OPEN GRAPH (پیش‌نمایش لینک تو تلگرام/دیسکورد/توییتر) ── -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Unique City CS2">
+<meta property="og:title" content="یونیک سیتی — سرور CS2">
+<meta property="og:description" content="کامیونیتی سرور CS2 یونیک سیتی — بهترین کامیونیتی برای بازیکنانی که بیشتر از یک بازی معمولی می‌خوان.">
+<meta property="og:image" content="https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/730/capsule_616x353.jpg">
+<meta property="og:url" content="https://bigyahoo7722.github.io/Uniqe_City_server_cs2/">
+<meta property="og:locale" content="fa_IR">
+
+<!-- ── TWITTER CARD ── -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="یونیک سیتی — سرور CS2">
+<meta name="twitter:description" content="کامیونیتی سرور CS2 یونیک سیتی — بهترین کامیونیتی برای بازیکنانی که بیشتر از یک بازی معمولی می‌خوان.">
+<meta name="twitter:image" content="https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/730/capsule_616x353.jpg">
+
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ── RESET ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --or:   #C9812E;
+  --orm:  #E0995A;
+  --dark: #0b0e10;
+  --card: #14181b;
+  --c2:   #1a1f22;
+  --cr:   #F2F3F4;
+  --mt:   #8A9299;
+  --steel: #93A9B8;
+  --bd:   rgba(147,169,184,.20);
+  --r:    10px;
+  --r-sm: 7px;
+  --glass:    rgba(255,255,255,.05);
+  --glass-bd: rgba(147,169,184,.16);
+  /* یه منحنی حرکتی یکسان برای کل سایت — شبیه شتاب‌گیری/کندشدن طبیعی
+     (نه خطی)، تا زبان حرکتی سایت یکدست و قابل‌پیش‌بینی باشه */
+  --ease: cubic-bezier(.22,1,.36,1);
+}
+
+html { scroll-behavior: smooth; overflow-x: hidden; max-width: 100%; }
+
+/* ── TACTILE PRESS FEEDBACK ──
+   هر عنصر قابل‌کلیک، لحظه‌ی فشرده‌شدن یه‌ذره جمع میشه (مثل دکمه‌ی فیزیکی) —
+   این بازخورد آنی حس کنترل و پاسخگویی رو زیاد می‌کنه، حتی قبل از اینکه
+   نتیجه‌ی واقعی کلیک (باز شدن پاپ‌آپ، کپی شدن و...) دیده بشه. */
+.btn, .nbtn, .pbtn, .news-filter, .rules-agree-btn, .rules-close,
+.admins-close-btn, .join-close, .join-submit, .join-success-close,
+.promo-btn, .ws-link, .maxbadge, .join-rules-link, .team-card,
+.news-card, .admin-item, footer .footer-col a {
+  transition: transform .12s var(--ease), background .2s var(--ease),
+    border-color .2s var(--ease), color .2s var(--ease), opacity .2s var(--ease);
+}
+.btn:active, .nbtn:active, .pbtn:active, .news-filter:active,
+.rules-agree-btn:active, .join-submit:active, .promo-btn:active,
+.ws-link:active, .maxbadge:active {
+  transform: scale(.96);
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn:active, .nbtn:active, .pbtn:active, .news-filter:active,
+  .rules-agree-btn:active, .join-submit:active, .promo-btn:active,
+  .ws-link:active, .maxbadge:active { transform: none; }
+}
+
+/* ── STAGGERED ITEM ENTRANCE ──
+   برای لیست‌هایی که با جاوااسکریپت پر میشن (کارت‌های خبر، ردیف‌های رنکینگ،
+   لیست ادمین‌ها) — به‌جای اینکه همه با هم یهو ظاهر بشن (که چشم رو غافلگیر
+   می‌کنه)، با یه تاخیر کوچیک پشت‌سرهم میان؛ چشم راحت‌تر دنبالشون می‌کنه.
+   عمداً از transition استفاده شده نه @keyframes — چون انیمیشن‌های keyframe
+   با fill-mode:forwards بعد از تمومشون، مقدار transform رو "قفل" می‌کنن و
+   جلوی hover:transform (مثل بالا اومدن کارت‌ها روی هاور) رو می‌گیرن. جاوااسکریپت
+   بعد از پایان ورود، کلاس‌ها رو کامل پاک می‌کنه که هیچ تداخلی با هاور نمونه. */
+.stagger-item {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity .5s var(--ease), transform .5s var(--ease);
+}
+.stagger-item.stagger-on {
+  opacity: 1;
+  transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .stagger-item { opacity: 1; transform: none; transition: none; }
+}
+
+
+/* ── UNIFIED MINIMAL SURFACE RADIUS ── */
+.btn, .popup, .pbtn, .hero-card, .toast, .promo, .team-card,
+.img-card, .ws-link, #rules-modal, #join-modal, .join-input, .join-submit,
+.rules-agree-btn, .vid-hero {
+  border-radius: var(--r);
+}
+.nbtn, .maxbadge { border-radius: var(--r-sm); }
+
+body {
+  background: var(--dark);
+  color: var(--cr);
+  font-family: 'Vazirmatn', sans-serif;
+  font-size: 15px;
+  line-height: 1.8;
+  overflow-x: hidden;
+}
+
+/* ── PAGE INTRO REVEAL ── */
+/* عمداً کاملاً CSS-محضه، هیچ کلاس جاوااسکریپتی لازم نداره. نسخه‌ی قبلی به یه
+   IIFE جاوااسکریپتی وابسته بود که کلاس رو تعویض می‌کرد؛ اگه هرچیزی تو اون
+   اسکریپت throw می‌کرد (یه اکستنشن مرورگر، هرچیزی)، کل صفحه برای همیشه رو
+   حالت مخفی گیر می‌کرد. با @keyframes خالص این ریسک کاملاً حذف شده — انیمیشن
+   با خود لود شدن CSS تضمینی اجرا میشه، مستقل از موفقیت جاوااسکریپت.
+   روی #page-wrap اجرا میشه نه مستقیم روی body، چون transform روی body باعث
+   میشه body یه containing block جدید برای فرزندهای position:fixed بشه
+   (توست‌ها/پاپ‌آپ‌ها دیگه نسبت به viewport فیکس نمی‌مونن). */
+#page-wrap {
+  animation: pageIntroIn .6s cubic-bezier(.22,1,.36,1) both;
+}
+@keyframes pageIntroIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  #page-wrap { animation: none; }
+}
+
+
+/* ── FOG PASS-THROUGH INTRO ──
+   دیگه در نداریم؛ فقط یه لایه‌ی مه/بخار که کل صفحه رو می‌پوشونه و محو میشه،
+   انگار کاربر از توش رد شده و به سایت رسیده. کاملاً مستقل از #page-wrap و
+   روی body می‌شینه (نه توش)، که مثل بقیه‌ی overlayهای fixed سایت (توست/پاپ‌آپ)
+   از باگ containing-block در امان بمونه.
+   عمداً سبک نگه داشته شده (بدون blur سنگین رو کل صفحه، بدون عناصر زیاد) که
+   رو گوشی‌های ضعیف‌تر هم لَگ نکنه. */
+#intro-doors {
+  position: fixed; inset: 0; z-index: 5000;
+  pointer-events: none;
+  overflow: hidden;
+}
+.intro-fog-veil {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 90% 70% at 50% 50%,
+      rgba(235,238,240,.55) 0%,
+      rgba(180,190,196,.30) 45%,
+      rgba(11,14,16,.92) 100%);
+  opacity: 1;
+  /* عمداً pure-CSS: هیچ کلاس جاوااسکریپتی برای محو شدنش لازم نیست، خودش
+     خودکار بعد از یه مکث کوتاه محو میشه — حتی اگه جاوااسکریپت کلاً فعال
+     نباشه، این لایه هیچ‌وقت برای همیشه رو صفحه گیر نمی‌کنه. */
+  animation: fogFadeOut 1.1s cubic-bezier(.22,1,.36,1) .15s both;
+}
+@keyframes fogFadeOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+.intro-steam-puff {
+  position: absolute; bottom: 0;
+  width: 220px; height: 220px; margin: -110px 0 0 -110px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(235,238,240,.45) 0%, rgba(235,238,240,0) 70%);
+  opacity: 0;
+}
+@keyframes steamPuff {
+  0%   { opacity: 0;   transform: translateY(6vh)   scale(.6); }
+  20%  { opacity: .8; }
+  100% { opacity: 0;   transform: translateY(-30vh) scale(1.8); }
+}
+.intro-steam-puff.go {
+  animation: steamPuff 1.3s ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #intro-doors { display: none; }
+}
+
+
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 500;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 22px 40px;
+  /* یه گرادیانت ملایم همیشه‌حاضر که نوار بالا هیچ‌وقت کاملاً شفاف/نامرئی
+     به‌نظر نرسه، حتی وسط اسکرول یا رو فریم‌های روشن‌تر ویدیوی هیرو */
+  background: linear-gradient(to bottom, rgba(6,8,9,.42) 0%, rgba(6,8,9,0) 100%);
+  transition: background .4s, padding .3s, border-bottom .3s, backdrop-filter .4s;
+  gap: 12px;
+  max-width: 100vw;
+}
+nav.scrolled {
+  background: rgba(10,10,10,.72);
+  backdrop-filter: blur(16px) saturate(1.3);
+  padding: 14px 40px;
+  border-bottom: 1px solid var(--glass-bd);
+}
+.logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 23px; letter-spacing: 2px;
+  color: var(--cr); text-decoration: none; flex-shrink: 0;
+  min-width: 0;
+  white-space: nowrap;
+  text-shadow: 0 2px 12px rgba(0,0,0,.5);
+}
+.logo span { color: var(--or); }
+
+.nav-center { display: flex; gap: 2px; }
+.nav-center a {
+  color: var(--cr); text-decoration: none;
+  font-size: 13px; font-weight: 500;
+  padding: 9px 14px; border-radius: var(--r-sm);
+  transition: color .2s, background .2s;
+  text-shadow: 0 1px 8px rgba(0,0,0,.4);
+}
+.nav-center a:hover { color: var(--or); background: var(--glass); }
+
+.nav-right {
+  display: flex; align-items: center; gap: 8px;
+  flex: 1 1 auto; min-width: 0;
+  overflow-x: auto; overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; -ms-overflow-style: none;
+  mask-image: linear-gradient(to left, transparent 0, black 20px, black calc(100% - 4px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to left, transparent 0, black 20px, black calc(100% - 4px), transparent 100%);
+}
+.nav-right::-webkit-scrollbar { display: none; height: 0; }
+
+/* ── UNIFIED NAV BUTTONS ── */
+.nbtn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  font-family: 'Vazirmatn', sans-serif;
+  font-size: 12.5px; font-weight: 600;
+  height: 38px; padding: 0 16px;
+  min-width: 108px;
+  flex-shrink: 0;
+  border-radius: var(--r-sm);
+  background: var(--glass);
+  border: 1px solid var(--glass-bd);
+  backdrop-filter: blur(10px) saturate(1.2);
+  color: var(--cr);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .2s, border-color .2s, transform .15s;
+}
+.nbtn:hover { background: rgba(255,255,255,.11); border-color: rgba(255,255,255,.22); transform: translateY(-1px); }
+.nbtn-icon { font-size: 13px; line-height: 1; flex-shrink: 0; }
+
+.ndot {
+  width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+}
+.ndot-green  { background: #22c55e; animation: pulse-dot 1.6s infinite; }
+.ndot-blue   { background: #29b6f6; animation: pulse-dot 1.6s infinite; }
+.ndot-orange { background: var(--or); animation: pulse-dot 1.6s infinite; }
+.ndot-pink   { background: #ff5ca8; animation: pulse-dot 1.6s infinite; }
+@keyframes pulse-dot {
+  0%,100% { box-shadow: 0 0 0 0 currentColor; }
+  50%      { box-shadow: 0 0 0 4px transparent; }
+}
+
+/* ── POPUPS ── */
+.popup {
+  position: fixed; top: 68px; right: 40px;
+  width: 280px; z-index: 600;
+  background: #1a1a1a;
+  border: 1px solid var(--bd);
+  box-shadow: 0 20px 50px rgba(0,0,0,.8);
+  padding: 22px;
+  opacity: 0; pointer-events: none;
+  transform: translateY(-10px) scale(.96);
+  transition: opacity .25s cubic-bezier(.22,1,.36,1), transform .25s cubic-bezier(.22,1,.36,1);
+  direction: rtl;
+}
+.popup.open {
+  opacity: 1; pointer-events: all;
+  transform: translateY(0) scale(1);
+}
+.popup-head {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 14px; flex-direction: row-reverse;
+}
+.popup-ico {
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.popup-ico-ts { background: var(--or); }
+.popup-ico-tg { background: #29b6f6; }
+.popup-name { font-size: 14px; font-weight: 700; color: var(--cr); }
+.popup-sub  { font-size: 11px; color: var(--mt); margin-top: 2px; }
+.popup-sep  { height: 1px; background: var(--bd); margin-bottom: 14px; }
+.popup-addr {
+  text-align: center;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 19px; letter-spacing: 2px; color: var(--or);
+  direction: ltr; padding: 10px;
+  background: rgba(201,129,46,.06);
+  border: 1px solid rgba(201,129,46,.12);
+  margin-bottom: 12px;
+}
+.popup-addr-tg { color: #29b6f6; background: rgba(41,182,246,.06); border-color: rgba(41,182,246,.12); }
+.popup-btns { display: flex; gap: 8px; }
+.pbtn {
+  flex: 1; padding: 10px 0;
+  font-family: 'Vazirmatn', sans-serif;
+  font-size: 12px; font-weight: 700;
+  border: none; cursor: pointer;
+  transition: opacity .2s;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.pbtn:hover { opacity: .85; }
+.pbtn-copy-ts { background: var(--or); color: var(--dark); }
+.pbtn-copy-tg { background: rgba(41,182,246,.15); color: #29b6f6; border: 1px solid rgba(41,182,246,.3); }
+.pbtn-open-tg { background: #29b6f6; color: #111; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 32px; left: 50%;
+  transform: translateX(-50%) translateY(16px);
+  font-family: 'Vazirmatn', sans-serif;
+  font-size: 13px; font-weight: 700;
+  padding: 11px 26px; z-index: 9999;
+  opacity: 0; pointer-events: none;
+  transition: opacity .3s, transform .3s;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+#toast-ts { background: #22c55e; color: #fff; }
+#toast-tg { background: #29b6f6; color: #111; }
+
+@keyframes popIn {
+  from { opacity:0; transform: scale(.94) translateY(20px); }
+  to   { opacity:1; transform: scale(1) translateY(0); }
+}
+
+/* ── HERO ── */
+#hero {
+  height: 100vh; min-height: 640px;
+  display: flex; align-items: center; justify-content: center;
+  position: relative; overflow: hidden;
+  background: var(--dark);
+}
+.hero-bg {
+  position: absolute; inset: 0;
+  background-image:
+    radial-gradient(ellipse 60% 50% at 40% 45%, rgba(147,169,184,.14) 0%, transparent 70%),
+    linear-gradient(160deg, rgba(9,12,14,.88) 0%, rgba(12,16,19,.88) 100%),
+    url('https://commons.wikimedia.org/wiki/Special:FilePath/MLG%20Columbus%20-%20Luminosity%20vs%20Navi.jpg');
+  background-size: cover, cover, cover;
+  background-position: center, center, center 35%;
+}
+.hero-video-wrap { position: absolute; inset: 0; overflow: hidden; opacity: 0; transition: opacity .8s ease; }
+.hero-video {
+  position: absolute; top: 50%; left: 50%;
+  width: 100%; height: 100%;
+  min-width: 100%; min-height: 100%;
+  object-fit: cover;
+  transform: translate(-50%,-50%) scale(1.02);
+  filter: saturate(1.05) contrast(1.05) brightness(.92);
+}
+.hero-video-overlay {
+  position: absolute; inset: 0;
+  background:
+    linear-gradient(180deg, rgba(9,11,13,.55) 0%, rgba(9,11,13,.12) 32%, rgba(9,11,13,.32) 60%, rgba(9,11,13,.92) 100%),
+    linear-gradient(90deg, rgba(9,11,13,.5) 0%, transparent 25%, transparent 75%, rgba(9,11,13,.5) 100%),
+    radial-gradient(ellipse 60% 45% at 50% 38%, rgba(147,169,184,.09) 0%, transparent 70%);
+}
+.hero-content {
+  position: relative; z-index: 2;
+  text-align: center; padding: 0 24px;
+}
+/* ── HERO FLOATING CARDS ── */
+.hero-card {
+  position: absolute; z-index: 3;
+  background: rgba(14,17,19,.55);
+  backdrop-filter: blur(14px) saturate(1.2);
+  border: 1px solid var(--bd);
+  padding: 18px 22px;
+  animation: fadeUp .8s 1s both;
+  box-shadow: 0 20px 40px rgba(0,0,0,.35);
+}
+.hero-eyebrow {
+  font-size: 13px; color: var(--or); font-weight: 500;
+  margin-bottom: 18px;
+  animation: fadeUp .6s .2s both;
+}
+.hero-eyebrow a { color: var(--or); text-decoration: underline; text-underline-offset: 3px; }
+.hero-eyebrow a:hover { color: var(--orm); }
+.hero-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(70px, 13vw, 150px);
+  line-height: .9; direction: ltr;
+  color: var(--cr);
+  animation: fadeUp .7s .4s both;
+  text-shadow: 0 4px 30px rgba(0,0,0,.5);
+}
+.hero-title .ac { color: var(--or); }
+.hero-sub {
+  font-size: 15px; color: var(--cr); opacity: .8;
+  margin: 24px auto 0; max-width: 460px;
+  animation: fadeUp .7s .6s both;
+  text-shadow: 0 2px 14px rgba(0,0,0,.5);
+}
+.hero-btns {
+  display: flex; gap: 10px; justify-content: center;
+  margin-top: 36px; flex-direction: row-reverse;
+  animation: fadeUp .7s .8s both;
+}
+.btn {
+  display: inline-block; padding: 12px 26px;
+  font-family: 'Vazirmatn', sans-serif;
+  font-size: 13px; font-weight: 600;
+  text-decoration: none;
+  transition: background .2s, color .2s, transform .15s;
+  cursor: pointer; border: none;
+}
+.btn:hover { transform: translateY(-2px); }
+.btn-p { background: var(--or); color: var(--dark); }
+.btn-p:hover { background: var(--orm); }
+.btn-o { background: transparent; color: var(--cr); border: 1px solid rgba(245,240,235,.2); }
+.btn-o:hover { border-color: var(--or); color: var(--or); }
+
+/* ── LIVE SERVER STATUS BADGE ── */
+.server-status-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  margin-top: 22px; padding: 8px 16px;
+  background: rgba(14,17,19,.55);
+  backdrop-filter: blur(10px) saturate(1.2);
+  border: 1px solid var(--bd);
+  font-size: 12px; color: var(--mt);
+  opacity: 0; transition: opacity .5s var(--ease);
+}
+.server-status-badge.show { opacity: 1; }
+.server-status-badge .ssb-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.server-status-badge .ssb-dot.online  { background: #22c55e; animation: pulse-dot 1.6s infinite; }
+.server-status-badge .ssb-dot.offline { background: #6b7280; }
+.server-status-badge b { color: var(--cr); font-weight: 700; }
+
+
+/* ── SECTIONS ── */
+.sec {
+  padding: 90px 40px;
+  max-width: 1280px; margin: 0 auto;
+}
+.sec-label { font-size: 11px; font-weight: 600; color: var(--or); margin-bottom: 10px; }
+.sec-title {
+  font-size: clamp(26px, 4vw, 46px); font-weight: 700;
+  color: var(--cr); margin-bottom: 44px; line-height: 1.2;
+}
+
+/* ── VIDEO HERO ── */
+.vid-hero {
+  position: relative; width: 100%;
+  aspect-ratio: 16/7; background: var(--card);
+  overflow: hidden; margin-bottom: 16px;
+}
+.vid-hero iframe { width: 100%; height: 100%; border: none; display: block; }
+.vid-badge {
+  position: absolute; top: 16px; right: 16px;
+  background: var(--or); color: var(--dark);
+  font-size: 10px; font-weight: 700; padding: 5px 10px;
+}
+
+/* ── IMAGE GRID ── */
+.img-grid {
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+  gap: 8px;
+}
+.img-card {
+  position: relative; overflow: hidden;
+  aspect-ratio: 4/3; background: var(--card);
+}
+.img-card.tall { grid-row: span 2; aspect-ratio: unset; }
+.img-card img {
+  width: 100%; height: 100%; object-fit: cover;
+  transition: transform .5s, filter .4s;
+  filter: brightness(.8);
+}
+.img-card:hover img { transform: scale(1.06); filter: brightness(1); }
+.img-card-ov {
+  position: absolute; inset: 0;
+  background: linear-gradient(transparent 55%, rgba(0,0,0,.7));
+  display: flex; align-items: flex-end; padding: 12px;
+  opacity: 0; transition: opacity .3s;
+}
+.img-card:hover .img-card-ov { opacity: 1; }
+.img-tag { font-size: 11px; color: var(--or); font-weight: 600; }
+
+/* ── PROMO ── */
+.promo {
+  margin: 0 40px;
+  background: var(--or);
+  padding: 64px 72px;
+  display: flex; align-items: center;
+  justify-content: space-between;
+  gap: 32px; flex-direction: row-reverse;
+}
+.promo-t {
+  font-size: clamp(22px,3vw,40px); font-weight: 700;
+  color: var(--dark); line-height: 1.3; max-width: 520px;
+}
+.promo-btn {
+  flex-shrink: 0;
+  background: var(--dark); color: var(--cr);
+  padding: 14px 28px;
+  font-family: 'Vazirmatn', sans-serif;
+  font-size: 13px; font-weight: 700;
+  text-decoration: none; white-space: nowrap;
+  transition: background .2s;
+}
+.promo-btn:hover { background: #1c1c1c; }
+
+
+/* ── TEAM ── */
+.team-grid { display: flex; gap: 20px; flex-direction: row-reverse; }
+.team-card {
+  flex: 1; background: var(--card);
+  border: 1px solid var(--bd);
+  padding: 32px 28px; position: relative; overflow: hidden;
+  transition: border-color .3s, transform .3s;
+}
+.team-card:hover { border-color: rgba(201,129,46,.5); transform: translateY(-3px); }
+.team-card::before {
+  content: ''; position: absolute;
+  top: 0; right: 0; width: 3px; height: 100%;
+  background: var(--or);
+}
+.tc-role { font-size: 11px; font-weight: 700; color: var(--or); margin-bottom: 12px; }
+.tc-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 38px; color: var(--cr);
+  direction: ltr; text-align: right; line-height: 1; margin-bottom: 14px;
+}
+.tc-desc { font-size: 13px; color: var(--mt); line-height: 1.9; }
+.tc-badge {
+  position: absolute; bottom: 20px; left: 20px;
+  background: rgba(201,129,46,.1); border: 1px solid rgba(201,129,46,.2);
+  padding: 5px 12px; font-size: 11px; color: var(--or); font-weight: 600;
+}
+
+/* ── WORKSHOP ── */
+.ws-link {
+  display: block; position: relative; overflow: hidden;
+  border: 1px solid var(--bd); text-decoration: none;
+  transition: border-color .3s, transform .3s;
+}
+.ws-link:hover { border-color: rgba(201,129,46,.6); transform: translateY(-3px); }
+.ws-img {
+  width: 100%; height: 300px; object-fit: cover; display: block;
+  filter: brightness(.65) saturate(.8);
+  transition: filter .4s, transform .4s;
+}
+.ws-link:hover .ws-img { filter: brightness(.45); transform: scale(1.03); }
+.ws-ov {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity .3s;
+  flex-direction: column; gap: 12px;
+}
+.ws-link:hover .ws-ov { opacity: 1; }
+.ws-ov-txt { font-size: 16px; font-weight: 700; color: #fff; }
+.ws-badge {
+  position: absolute; top: 16px; right: 16px;
+  background: var(--or); color: var(--dark);
+  font-size: 11px; font-weight: 700; padding: 5px 12px;
+}
+
+/* ── FOOTER ── */
+footer {
+  margin-top: 90px;
+  border-top: 1px solid var(--bd);
+  padding: 56px 40px 36px;
+}
+.footer-top {
+  display: flex; justify-content: space-between;
+  align-items: flex-start; margin-bottom: 44px; gap: 36px;
+  flex-direction: row-reverse;
+}
+.footer-logo { font-family: 'Bebas Neue', sans-serif; font-size: 30px; display: block; margin-bottom: 10px; text-decoration: none; color: var(--cr); }
+.footer-logo span { color: var(--or); }
+.footer-desc { font-size: 13px; color: var(--mt); max-width: 260px; line-height: 1.8; }
+.maxbadge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--c2); border: 1px solid var(--bd);
+  padding: 8px 14px; margin-top: 12px;
+  text-decoration: none; color: var(--mt); font-size: 12px;
+  transition: border-color .2s, color .2s;
+}
+.maxbadge:hover { border-color: var(--or); color: var(--cr); }
+.maxbadge span { color: var(--or); font-weight: 600; }
+
+.footer-cols { display: flex; gap: 52px; flex-direction: row-reverse; }
+.footer-col h4 { font-size: 11px; font-weight: 700; color: var(--or); margin-bottom: 16px; }
+.footer-col a {
+  display: block; color: var(--mt); text-decoration: none;
+  font-size: 13px; margin-bottom: 9px; transition: color .2s;
+}
+.footer-col a:hover { color: var(--cr); }
+.footer-bot {
+  display: flex; justify-content: space-between; align-items: center;
+  border-top: 1px solid var(--bd); padding-top: 24px;
+  font-size: 12px; color: var(--mt); flex-direction: row-reverse;
+}
+.server-ip {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px; color: var(--or); direction: ltr;
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp {
+  from { opacity:0; transform: translateY(28px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+@keyframes scrollP { 0%,100% { opacity:1; } 50% { opacity:.3; } }
+
+.reveal { opacity:0; transform: translateY(32px); transition: opacity .7s cubic-bezier(.22,1,.36,1), transform .7s cubic-bezier(.22,1,.36,1); }
+.reveal.on { opacity:1; transform: translateY(0); }
+.d1 { transition-delay: .1s; }
+.d2 { transition-delay: .2s; }
+.d3 { transition-delay: .3s; }
+
+.scroll-hint {
+  position: absolute; bottom: 28px; left: 40px;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  animation: fadeIn 1s 1.6s both;
+}
+.scroll-hint span { font-size: 10px; color: var(--mt); writing-mode: vertical-rl; }
+.scroll-line {
+  width: 1px; height: 46px;
+  background: linear-gradient(var(--or), transparent);
+  animation: scrollP 1.6s infinite;
+}
+
+/* ── NEWS & TOURNAMENTS ── */
+.news-filters { display: flex; gap: 8px; margin-bottom: 26px; flex-wrap: wrap; }
+.news-filter {
+  font-family: 'Vazirmatn', sans-serif; font-size: 12.5px; font-weight: 600;
+  padding: 8px 16px; border-radius: 999px;
+  background: var(--glass); border: 1px solid var(--glass-bd); color: var(--mt);
+  cursor: pointer; transition: background .2s, color .2s, border-color .2s;
+}
+.news-filter:hover { color: var(--cr); }
+.news-filter.active { background: var(--or); border-color: var(--or); color: #0c0f11; }
+
+.news-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+
+.news-card {
+  background: var(--card); border: 1px solid var(--bd); border-radius: var(--r);
+  overflow: hidden; display: flex; flex-direction: column;
+  transition: transform .25s, border-color .25s;
+  text-decoration: none; color: inherit;
+}
+.news-card:hover { transform: translateY(-4px); border-color: rgba(201,129,46,.5); }
+.news-card-img { aspect-ratio: 16/9; background-size: cover; background-position: center; background-color: var(--c2); position: relative; }
+.news-card-body { padding: 16px; display: flex; flex-direction: column; gap: 9px; flex: 1; }
+
+.news-badge {
+  align-self: flex-start; font-size: 10.5px; font-weight: 700; padding: 4px 10px;
+  border-radius: 999px; letter-spacing: .3px;
+}
+.news-badge.news       { background: rgba(147,169,184,.18); color: var(--steel); }
+.news-badge.tournament { background: rgba(201,129,46,.18); color: var(--or); }
+.news-badge.update     { background: rgba(34,197,94,.18); color: #4ade80; }
+.news-badge.workshop   { background: rgba(41,182,246,.18); color: #29b6f6; }
+
+.news-title { font-size: 14.5px; font-weight: 700; line-height: 1.7; color: var(--cr); }
+.news-summary { font-size: 12.5px; color: var(--mt); line-height: 1.85; flex: 1; }
+.news-meta {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 11px; color: var(--mt); padding-top: 8px; border-top: 1px solid var(--bd);
+}
+.news-source { color: var(--or); font-weight: 600; }
+
+.news-skel { background: var(--card); border: 1px solid var(--bd); border-radius: var(--r); overflow: hidden; }
+.news-skel-img { aspect-ratio: 16/9; background: linear-gradient(90deg, var(--c2) 25%, rgba(255,255,255,.06) 50%, var(--c2) 75%); background-size: 200% 100%; animation: skelShine 1.4s infinite; }
+.news-skel-body { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.news-skel-line { height: 10px; border-radius: 4px; background: linear-gradient(90deg, var(--c2) 25%, rgba(255,255,255,.06) 50%, var(--c2) 75%); background-size: 200% 100%; animation: skelShine 1.4s infinite; }
+.news-skel-line.w60 { width: 60%; }
+.news-skel-line.w40 { width: 40%; }
+@keyframes skelShine { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+.news-empty {
+  grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: var(--mt);
+  border: 1px dashed var(--bd); border-radius: var(--r); font-size: 13.5px; line-height: 2;
+}
+.news-empty-icon { font-size: 30px; margin-bottom: 10px; display: block; }
+.news-retry {
+  margin-top: 14px; display: inline-block; font-size: 12px; font-weight: 600;
+  padding: 8px 18px; border-radius: var(--r-sm); background: var(--glass);
+  border: 1px solid var(--glass-bd); color: var(--cr); cursor: pointer;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 860px) {
+  nav { padding: 14px 20px; gap: 6px; }
+  nav.scrolled { padding: 10px 20px; }
+  .nav-center { display: none; }
+  #sv-btn span:last-child { display: none; }
+  .hero-card { display: none; }
+  .logo { font-size: 18px; letter-spacing: 1px; }
+  .nbtn { min-width: 0; height: 32px; padding: 0 10px; font-size: 10px; gap: 4px; }
+  .nav-right { gap: 4px; flex-wrap: nowrap; }
+  .sec { padding: 60px 20px; }
+  .img-grid { grid-template-columns: repeat(2,1fr); }
+  .news-grid { grid-template-columns: 1fr; }
+  .news-filters { justify-content: center; }
+  .img-card.tall { grid-row: unset; aspect-ratio: 4/3; }
+  .promo { flex-direction: column; padding: 40px 28px; margin: 0 20px; }
+  .footer-top { flex-direction: column; }
+  .footer-cols { flex-wrap: wrap; gap: 28px; }
+  .footer-bot { flex-direction: column; gap: 10px; text-align: center; }
+  .team-grid { flex-direction: column; }
+  .hero-stats { gap: 24px; flex-wrap: wrap; padding: 0 20px; }
+  .popup { right: 20px; left: 20px; width: auto; }
+  .vid-hero { aspect-ratio: 16/9; }
+}
+@media (max-width: 400px) {
+  nav { padding: 12px 14px; gap: 4px; }
+  nav.scrolled { padding: 8px 14px; }
+  .logo { font-size: 16px; }
+  .nbtn { padding: 0 8px; font-size: 9.5px; height: 30px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration:.001ms !important; transition-duration:.001ms !important; }
+}
+
+
+/* ── RULES MODAL ── */
+#rules-overlay {
+  position: fixed; inset: 0; z-index: 900;
+  background: rgba(10,10,10,0.85);
+  backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+  opacity: 0; visibility: hidden;
+  transition: opacity .4s ease, visibility .4s ease;
+}
+#rules-overlay.open {
+  opacity: 1; visibility: visible;
+}
+#rules-modal {
+  background: var(--card);
+  border: 1px solid var(--bd);
+  width: 100%; max-width: 680px;
+  max-height: 85vh;
+  display: flex; flex-direction: column;
+  position: relative;
+  transform: translateY(32px) scale(0.97);
+  transition: transform .4s cubic-bezier(.22,1,.36,1);
+  overflow: hidden;
+}
+#rules-overlay.open #rules-modal {
+  transform: translateY(0) scale(1);
+}
+.rules-header {
+  padding: 28px 32px 22px;
+  border-bottom: 1px solid var(--bd);
+  display: flex; align-items: center; justify-content: space-between;
+  background: linear-gradient(135deg, rgba(201,129,46,.07) 0%, transparent 70%);
+  flex-shrink: 0;
+}
+.rules-header-left { display: flex; align-items: center; gap: 14px; }
+.rules-icon {
+  width: 46px; height: 46px;
+  background: linear-gradient(135deg, var(--or), var(--orm));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; flex-shrink: 0;
+}
+.rules-title { font-family: 'Bebas Neue', sans-serif; font-size: 26px; color: var(--cr); letter-spacing: 1px; }
+.rules-subtitle { font-size: 11px; color: var(--mt); margin-top: 2px; }
+.rules-close {
+  background: none; border: none; cursor: pointer;
+  color: var(--mt); font-size: 20px; line-height: 1;
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  transition: color .2s, background .2s;
+  flex-shrink: 0;
+}
+.rules-close:hover { color: var(--cr); background: rgba(255,255,255,.06); }
+.rules-body {
+  overflow-y: auto; padding: 28px 32px;
+  display: flex; flex-direction: column; gap: 10px;
+  scrollbar-width: thin; scrollbar-color: var(--or) transparent;
+}
+.rules-body::-webkit-scrollbar { width: 4px; }
+.rules-body::-webkit-scrollbar-thumb { background: var(--or); }
+.rules-cat-title {
+  font-size: 10px; font-weight: 700; color: var(--or);
+  letter-spacing: 2px; text-transform: uppercase;
+  margin: 18px 0 6px; padding-bottom: 8px;
+  border-bottom: 1px solid rgba(201,129,46,.2);
+}
+.rules-cat-title:first-child { margin-top: 0; }
+.rule-item {
+  display: flex; gap: 14px; align-items: flex-start;
+  padding: 12px 16px;
+  background: rgba(255,255,255,.02);
+  border: 1px solid transparent;
+  border-right: 3px solid transparent;
+  transition: background .2s, border-color .2s;
+}
+.rule-item:hover {
+  background: rgba(201,129,46,.05);
+  border-color: rgba(201,129,46,.15);
+  border-right-color: var(--or);
+}
+.rule-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px; color: var(--or);
+  min-width: 28px; line-height: 1.2;
+  flex-shrink: 0;
+}
+.rule-text { font-size: 13px; color: var(--cr); line-height: 1.8; }
+.rule-text b { color: var(--or); font-weight: 700; }
+.rule-text small { display: block; font-size: 11px; color: var(--mt); margin-top: 3px; }
+.rules-footer {
+  padding: 18px 32px;
+  border-top: 1px solid var(--bd);
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(0,0,0,.2);
+  flex-shrink: 0;
+}
+.rules-footer-note { font-size: 11px; color: var(--mt); }
+.rules-footer-note span { color: var(--or); }
+.rules-agree-btn {
+  background: var(--or); color: var(--dark);
+  border: none; cursor: pointer;
+  font-family: 'Vazirmatn', sans-serif;
+  font-size: 12px; font-weight: 700;
+  padding: 10px 24px;
+  transition: background .2s, transform .15s;
+}
+.rules-agree-btn:hover { background: var(--orm); transform: translateY(-1px); }
+@media (max-width: 600px) {
+  .rules-header { padding: 20px; }
+  .rules-body   { padding: 20px; }
+  .rules-footer { padding: 14px 20px; flex-direction: column; gap: 12px; align-items: stretch; }
+  .rules-agree-btn { text-align: center; }
+}
+
+
+/* ── ADMINS MODAL ── */
+#admins-overlay {
+  position: fixed; inset: 0; z-index: 900;
+  background: rgba(10,10,10,0.85);
+  backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+  opacity: 0; visibility: hidden;
+  transition: opacity .4s ease, visibility .4s ease;
+}
+#admins-overlay.open { opacity: 1; visibility: visible; }
+#admins-modal {
+  background: var(--card);
+  border: 1px solid var(--bd);
+  width: 100%; max-width: 420px;
+  max-height: 85vh;
+  display: flex; flex-direction: column;
+  position: relative;
+  transform: translateY(32px) scale(0.97);
+  transition: transform .4s cubic-bezier(.22,1,.36,1);
+  overflow: hidden;
+}
+#admins-overlay.open #admins-modal { transform: translateY(0) scale(1); }
+.admins-body { overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+.admin-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px;
+  background: rgba(255,255,255,.02);
+  border: 1px solid transparent;
+  border-right: 3px solid var(--or);
+  transition: background .2s;
+}
+.admin-item:hover { background: rgba(201,129,46,.06); }
+.admin-avatar {
+  width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--steel); color: #0c0f11; font-weight: 700; font-size: 13px;
+}
+.admin-name { font-size: 14px; color: var(--cr); font-weight: 600; }
+
+/* ── JOIN BTN (uses unified .nbtn style) ── */
+
+/* ── JOIN MODAL ── */
+#join-overlay {
+  position: fixed; inset: 0; z-index: 910;
+  background: rgba(8,8,8,0.92);
+  backdrop-filter: blur(12px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+  opacity: 0; visibility: hidden;
+  transition: opacity .4s ease, visibility .4s ease;
+}
+#join-overlay.open { opacity: 1; visibility: visible; }
+#join-modal {
+  background: #191919;
+  border: 1px solid rgba(201,129,46,.25);
+  box-shadow: 0 0 0 1px rgba(201,129,46,.08), 0 40px 80px rgba(0,0,0,.8), 0 0 60px rgba(201,129,46,.06);
+  width: 100%; max-width: 460px;
+  position: relative;
+  transform: translateY(32px) scale(0.96);
+  transition: transform .45s cubic-bezier(.22,1,.36,1);
+  overflow: hidden;
+}
+#join-overlay.open #join-modal { transform: translateY(0) scale(1); }
+
+/* top accent line */
+#join-modal::before {
+  content: '';
+  display: block; height: 3px;
+  background: linear-gradient(90deg, transparent, var(--or), var(--orm), transparent);
+}
+
+.join-header {
+  padding: 26px 30px 20px;
+  border-bottom: 1px solid rgba(201,129,46,.12);
+  background: linear-gradient(135deg, rgba(201,129,46,.06) 0%, transparent 60%);
+  display: flex; align-items: center; justify-content: space-between;
+  position: relative;
+}
+.join-header-left { display: flex; align-items: center; gap: 14px; }
+.join-icon {
+  width: 48px; height: 48px;
+  background: linear-gradient(135deg, var(--or), var(--orm));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; flex-shrink: 0;
+  box-shadow: 0 4px 20px rgba(201,129,46,.35);
+}
+.join-title { font-family: 'Bebas Neue', sans-serif; font-size: 24px; color: var(--cr); letter-spacing: 2px; }
+.join-sub { font-size: 11px; color: var(--mt); margin-top: 3px; letter-spacing: .5px; }
+.join-close {
+  background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08); cursor: pointer;
+  color: var(--mt); font-size: 16px;
+  width: 34px; height: 34px;
+  display: flex; align-items: center; justify-content: center;
+  transition: color .2s, background .2s, border-color .2s;
+}
+.join-close:hover { color: var(--cr); background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.2); }
+
+/* stats bar */
+.join-stats {
+  display: flex; border-bottom: 1px solid rgba(201,129,46,.1);
+}
+.join-stat {
+  flex: 1; padding: 12px 0; text-align: center;
+  border-left: 1px solid rgba(201,129,46,.1);
+}
+.join-stat:last-child { border-left: none; }
+.join-stat-num { font-family: 'Bebas Neue', sans-serif; font-size: 20px; color: var(--or); }
+.join-stat-lbl { font-size: 9px; color: var(--mt); letter-spacing: 1px; margin-top: 2px; }
+
+.join-body { padding: 26px 30px; display: flex; flex-direction: column; gap: 18px; }
+
+.join-field { display: flex; flex-direction: column; gap: 7px; }
+.join-label {
+  font-size: 10px; font-weight: 700; color: var(--or);
+  letter-spacing: 2px; text-transform: uppercase;
+  display: flex; align-items: center; gap: 6px;
+}
+.join-label::before { content: ''; display: block; width: 3px; height: 3px; background: var(--or); }
+.join-input-wrap { position: relative; }
+.join-input {
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.08);
+  border-bottom: 2px solid rgba(201,129,46,.2);
+  color: var(--cr);
+  font-family: 'Vazirmatn', sans-serif;
+  font-size: 14px;
+  padding: 13px 16px;
+  outline: none;
+  transition: border-color .25s, background .25s, box-shadow .25s;
+  width: 100%;
+}
+.join-input:focus {
+  border-color: rgba(201,129,46,.3);
+  border-bottom-color: var(--or);
+  background: rgba(201,129,46,.04);
+  box-shadow: 0 4px 20px rgba(201,129,46,.08);
+}
+.join-input::placeholder { color: rgba(136,136,136,.6); }
+
+/* password strength */
+.strength-wrap { margin-top: 8px; }
+.strength-bars {
+  display: flex; gap: 4px; margin-bottom: 6px;
+}
+.strength-seg {
+  flex: 1; height: 3px;
+  background: rgba(255,255,255,.08);
+  transition: background .3s ease;
+}
+.strength-row {
+  display: flex; justify-content: space-between; align-items: center;
+}
+.strength-label { font-size: 10px; color: var(--mt); transition: color .3s; }
+.strength-tips { font-size: 10px; color: rgba(136,136,136,.5); }
+
+.join-divider {
+  display: flex; align-items: center; gap: 12px;
+  color: rgba(136,136,136,.3); font-size: 10px; letter-spacing: 2px;
+}
+.join-divider::before, .join-divider::after {
+  content: ''; flex: 1; height: 1px;
+  background: rgba(201,129,46,.1);
+}
+
+.join-err {
+  font-size: 11px; color: #ef4444;
+  min-height: 16px; text-align: center;
+  padding: 8px 12px;
+  background: rgba(239,68,68,.06);
+  border: 1px solid rgba(239,68,68,.15);
+  display: none;
+}
+.join-err.show { display: block; }
+
+.join-submit {
+  background: linear-gradient(135deg, var(--or), var(--orm));
+  color: var(--dark);
+  border: none; cursor: pointer;
+  font-family: 'Vazirmatn', sans-serif;
+  font-size: 13px; font-weight: 700;
+  padding: 15px;
+  width: 100%;
+  position: relative; overflow: hidden;
+  transition: opacity .2s, transform .15s;
+  letter-spacing: .5px;
+}
+.join-submit::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.15) 50%, transparent 100%);
+  transform: translateX(-100%);
+  transition: transform .5s ease;
+}
+.join-submit:hover::after { transform: translateX(100%); }
+.join-submit:hover { opacity: .92; transform: translateY(-1px); }
+.join-submit:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+
+.join-footer-note {
+  text-align: center; font-size: 10px; color: rgba(136,136,136,.5);
+  padding: 0 0 4px;
+}
+
+/* success */
+.join-success {
+  padding: 48px 30px;
+  text-align: center;
+  display: none; flex-direction: column; align-items: center; gap: 16px;
+  background: radial-gradient(ellipse at center, rgba(201,129,46,.06) 0%, transparent 70%);
+}
+.join-success.show { display: flex; }
+.join-success-ico { font-size: 56px; animation: popIn .5s cubic-bezier(.22,1,.36,1); }
+.join-success-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 34px; color: var(--or); letter-spacing: 2px;
+  line-height: 1;
+}
+.join-success-txt { font-size: 13px; color: var(--mt); line-height: 2; max-width: 280px; }
+.join-success-username { color: var(--cr); font-weight: 700; }
+.join-success-close {
+  background: linear-gradient(135deg, var(--or), var(--orm));
+  color: var(--dark); border: none; cursor: pointer;
+  font-family: 'Vazirmatn', sans-serif;
+  font-size: 13px; font-weight: 700;
+  padding: 13px 36px; margin-top: 8px;
+  transition: opacity .2s, transform .15s;
+  box-shadow: 0 4px 20px rgba(201,129,46,.3);
+}
+.join-success-close:hover { opacity: .9; transform: translateY(-1px); }
+
+
+.join-rules-link {
+  background: none; border: none; cursor: pointer;
+  color: var(--or); font-family: 'Vazirmatn', sans-serif;
+  font-size: 10px; font-weight: 700;
+  text-decoration: underline; text-underline-offset: 2px;
+  padding: 0; transition: color .2s;
+}
+.join-rules-link:hover { color: var(--orm); }
+
+/* success rules scroll */
+.join-success-rules {
+  width: 100%;
+  max-height: 140px;
+  overflow-y: auto;
+  background: rgba(255,255,255,.02);
+  border: 1px solid rgba(201,129,46,.15);
+  border-right: 3px solid var(--or);
+  padding: 12px 14px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--or) transparent;
+  text-align: right;
+}
+.join-success-rules::-webkit-scrollbar { width: 3px; }
+.join-success-rules::-webkit-scrollbar-thumb { background: var(--or); }
+.join-success-rules-title {
+  font-size: 10px; font-weight: 700; color: var(--or);
+  letter-spacing: 1px; margin-bottom: 8px;
+}
+.join-success-rules-item {
+  font-size: 11px; color: var(--mt); line-height: 1.9;
+  padding: 2px 0;
+  border-bottom: 1px solid rgba(255,255,255,.03);
+}
+.join-success-rules-item:last-child { border-bottom: none; }
+.join-success-rules-item b { color: var(--cr); }
+
+</style>
+</head>
+<body>
+
+<!-- ── SCI-FI DOOR + STEAM INTRO ── -->
+<div id="intro-doors" aria-hidden="true">
+  <div class="intro-fog-veil"></div>
+  <div id="intro-steam"></div>
+</div>
+
+<!-- ── POPUPS ── -->
+<div class="popup" id="ts-popup" role="dialog" aria-label="آدرس تیم‌اسپیک">
+  <div class="popup-head">
+    <div class="popup-ico popup-ico-ts">🎧</div>
+    <div>
+      <div class="popup-name">با تشکر از آقای اسموکی</div>
+      <div class="popup-sub">سرور TeamSpeak یونیک سیتی</div>
+    </div>
+  </div>
+  <div class="popup-sep"></div>
+  <div class="popup-addr">217.18.90.7:1254</div>
+  <div class="popup-btns">
+    <button class="pbtn pbtn-copy-ts" onclick="copyTs()">📋 کپی آدرس</button>
+  </div>
+</div>
+
+<div class="popup" id="sv-popup" role="dialog" aria-label="آدرس سرور بازی">
+  <div class="popup-head">
+    <div class="popup-ico" style="background:var(--or);">🎯</div>
+    <div>
+      <div class="popup-name">آدرس سرور بازی</div>
+      <div class="popup-sub">یونیک سیتی — CS2 (Steam)</div>
+    </div>
+  </div>
+  <div class="popup-sep"></div>
+  <div class="popup-addr">5.57.32.32:28208</div>
+  <div class="popup-btns">
+    <button class="pbtn pbtn-copy-ts" onclick="copySv()">📋 کپی آدرس</button>
+    <a class="pbtn pbtn-open-tg" style="background:var(--or);color:var(--dark);text-decoration:none;" href="steam://connect/5.57.32.32:28208" onclick="connectServer()">🚀 اتصال با استیم</a>
+  </div>
+</div>
+
+<div class="popup" id="tg-popup" role="dialog" aria-label="لینک تلگرام">
+  <div class="popup-head">
+    <div class="popup-ico popup-ico-tg">✈️</div>
+    <div>
+      <div class="popup-name">گروه تلگرام</div>
+      <div class="popup-sub">@unique3ity</div>
+    </div>
+  </div>
+  <div class="popup-sep"></div>
+  <div class="popup-addr popup-addr-tg">t.me/unique3ity</div>
+  <div class="popup-btns">
+    <button class="pbtn pbtn-copy-tg" onclick="copyTg()">📋 کپی</button>
+    <button class="pbtn pbtn-open-tg" onclick="openTg()">🚀 باز کردن</button>
+  </div>
+</div>
+
+<!-- ── TOASTS ── -->
+<div class="toast" id="toast-ts" role="status" aria-live="polite">✅ آدرس تیم‌اسپیک کپی شد!</div>
+<div class="toast" id="toast-tg" role="status" aria-live="polite">✅ لینک تلگرام کپی شد!</div>
+<div class="toast" id="toast-sv" role="status" aria-live="polite" style="background:var(--or);color:var(--dark);">✅ آدرس سرور بازی کپی شد!</div>
+<div class="toast" id="toast-connect" role="status" aria-live="polite" style="background:var(--steel);color:#0c0f11;">🚀 در حال باز کردن Steam… اجازه‌ی مرورگر رو تایید کن</div>
+
+<!-- ── NAV ── -->
+<div id="page-wrap">
+<header>
+<nav id="navbar">
+  <div class="nav-right">
+    <button class="nbtn" id="sv-btn"><span aria-hidden="true" class="ndot ndot-orange"></span><span>سرور بازی</span></button>
+    <button class="nbtn" id="ts-btn"><span aria-hidden="true" class="ndot ndot-green"></span><span>تیم‌اسپیک</span></button>
+    <button class="nbtn" id="tg-btn"><span aria-hidden="true" class="ndot ndot-blue"></span><span>تلگرام</span></button>
+    <a class="nbtn" href="https://reymit.ir/uniquecity" target="_blank"><span class="nbtn-icon">❤️</span><span>حمایت مالی</span></a>
+    <button class="nbtn" id="open-join-btn"><span aria-hidden="true" class="ndot ndot-pink"></span><span>عضویت</span></button>
+  </div>
+  <div class="nav-center">
+    <a href="#news">اخبار</a>
+    <a href="https://maxgaming.ir/fa" target="_blank">مکس گیمینگ</a>
+    <a href="steam://connect/5.57.32.32:28208" onclick="connectServer()" class="btn btn-p" style="font-size:12px;padding:7px 14px;">اتصال به سرور</a>
+  </div>
+  <a class="logo" href="#"><span>Unique</span> City</a>
+</nav>
+</header>
+
+<main>
+<!-- ── HERO ── -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-video-wrap" id="heroVideoWrap">
+    <video class="hero-video" id="heroVideo" autoplay muted loop playsinline preload="auto"
+      poster="https://assets.mixkit.co/videos/43527/43527-thumb-360-0.jpg">
+      <source src="https://assets.mixkit.co/videos/43527/43527-360.mp4" type="video/mp4">
+    </video>
+  </div>
+  <div class="hero-video-overlay"></div>
+
+  <div class="hero-content">
+    <p class="hero-eyebrow">کامیونیتی سرور <a href="https://maxgaming.ir/fa" target="_blank">مکس گیمینگ</a> — کاری از Big_Yahoo</p>
+    <h1 class="hero-title">Unique<br><span class="ac">City</span></h1>
+    <p class="hero-sub">جایی که هر مچ یک داستانه. بهترین کامیونیتی CS2 برای بازیکنانی که بیشتر از یک بازی معمولی می‌خوان.</p>
+    <div class="hero-btns">
+      <a href="steam://connect/5.57.32.32:28208" onclick="connectServer()" class="btn btn-p">اتصال به سرور</a>
+      <a href="#news" class="btn btn-o">اخبار و رویدادها</a>
+    </div>
+    <div class="server-status-badge" id="server-status-badge"></div>
+  </div>
+  <div class="scroll-hint"><span>اسکرول</span><div class="scroll-line"></div></div>
+</section>
+
+
+
+<!-- ── NEWS & TOURNAMENTS ── -->
+<section id="news" class="sec">
+  <div class="reveal"><p class="sec-label">اخبار و رویدادها</p><h2 class="sec-title">تازه‌ترین خبرهای دنیای CS2</h2></div>
+
+  <div class="news-filters reveal d1">
+    <button class="news-filter active" data-filter="all">همه</button>
+    <button class="news-filter" data-filter="news">اخبار</button>
+    <button class="news-filter" data-filter="tournament">تورنومنت‌ها</button>
+    <button class="news-filter" data-filter="update">آپدیت بازی</button>
+    <button class="news-filter" data-filter="workshop">ورک‌شاپ</button>
+  </div>
+
+  <div class="news-grid reveal d1" id="news-grid">
+    <!-- محتوا به‌صورت خودکار توسط جاوااسکریپت از Supabase پر می‌شه، بعد از اولین اسکرول -->
+  </div>
+</section>
+
+<!-- ── PROMO ── -->
+<div class="promo reveal">
+  <div class="promo-t">آماده‌ای در بالاترین سطح بازی کنی؟ شهر منتظرته.</div>
+  <a class="promo-btn" href="steam://connect/5.57.32.32:28208" onclick="connectServer()">همین الان وصل شو — رایگانه</a>
+</div>
+
+
+
+<!-- ── TEAM ── -->
+<section id="team" class="sec">
+  <div class="reveal"><p class="sec-label">تیم سرور</p><h2 class="sec-title">مدیریت و مالکیت</h2></div>
+  <div class="team-grid">
+    <div class="team-card reveal">
+      <div class="tc-role">مالک سرور</div>
+      <div class="tc-name">Vmaster</div>
+      <div class="tc-desc">مالک و بنیان‌گذار سرور یونیک سیتی. تمامی زیرساخت‌ها، قوانین و مسیر کلی سرور زیر نظر ایشان تعریف و اجرا می‌شه.</div>
+      <div class="tc-badge">👑 Owner</div>
+    </div>
+    <div class="team-card reveal d1" id="admins-card" role="button" tabindex="0" style="cursor:pointer;">
+      <div class="tc-role">مدیریت سرور</div>
+      <div class="tc-name">Admin Team</div>
+      <div class="tc-desc">تیم مدیریت یونیک سیتی مسئول نظارت بر بازیکنان، اجرای قوانین و حفظ فضای سالم کامیونیتی هستن. برای دیدن لیست اسامی کلیک کن.</div>
+      <div class="tc-badge">🛡 Management</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── WORKSHOP ── -->
+<section id="workshop" class="sec">
+  <div class="reveal"><p class="sec-label">استیم ورکشاپ</p><h2 class="sec-title">دست پخت‌های اعضا</h2></div>
+  <a class="ws-link reveal d1" href="https://steamcommunity.com/sharedfiles/filedetails/?id=3616246966" target="_blank">
+    <img src="https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/730/capsule_616x353.jpg" alt="CS2 Workshop" class="ws-img">
+    <div class="ws-ov">
+      <svg width="48" height="48" viewBox="0 0 48 48"><circle cx="24" cy="24" r="23" stroke="white" stroke-width="1.5" fill="rgba(0,0,0,.4)"/><path d="M19 14l18 10-18 10V14z" fill="white"/></svg>
+      <div class="ws-ov-txt">مشاهده در Steam Workshop</div>
+    </div>
+    <div class="ws-badge">🔧 Workshop</div>
+  </a>
+</section>
+</main>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="footer-top">
+    <div>
+      <a class="footer-logo" href="#"><span>Unique</span> City</a>
+      <p class="footer-desc">یک کامیونیتی CS2 با محوریت بازیکن. کاری از Big_Yahoo.</p>
+      <a href="https://maxgaming.ir/fa" target="_blank" class="maxbadge">🖥 هاست شده روی <span>مکس گیمینگ</span></a>
+    </div>
+    <div class="footer-cols">
+      <div class="footer-col">
+        <h4>بازی</h4>
+        <a href="steam://connect/5.57.32.32:28208" onclick="connectServer()" id="footer-connect">اتصال به سرور</a>
+        <a href="#team">جدول رتبه‌بندی</a>
+        <a href="#team">تورنمنت‌ها</a>
+        <a href="https://reymit.ir/uniquecity" target="_blank">عضویت VIP</a>
+      </div>
+      <div class="footer-col">
+        <h4>کامیونیتی</h4>
+        <a href="https://t.me/unique3ity" target="_blank">تلگرام</a>
+        <a href="#news">اخبار</a>
+        <a href="https://t.me/unique3ity" target="_blank">گزارش بازیکن</a>
+      </div>
+      <div class="footer-col">
+        <h4>اطلاعات</h4>
+        <a href="#" id="open-rules-btn">قوانین سرور</a>
+        <a href="#team">درباره ما</a>
+        <a href="https://t.me/unique3ity" target="_blank">تماس با ما</a>
+        <a href="https://t.me/unique3ity" target="_blank">حریم خصوصی</a>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bot">
+    <span>© ۱۴۰۵ سرور CS2 یونیک سیتی. تمامی حقوق محفوظ است.</span>
+  </div>
+</footer>
+</div>
+<!-- پایان page-wrap: بعد از این فقط پاپ‌آپ‌ها/مودال‌هایی هستن که باید همیشه
+     نسبت به viewport فیکس بمونن، نه نسبت به این wrapper -->
+
+
+<!-- ── RULES MODAL ── -->
+<div id="rules-overlay" role="dialog" aria-modal="true" aria-labelledby="rules-modal-title">
+  <div id="rules-modal">
+
+    <div class="rules-header">
+      <div class="rules-header-left">
+        <div class="rules-icon">📋</div>
+        <div>
+          <div class="rules-title" id="rules-modal-title">قوانین سرور</div>
+          <div class="rules-subtitle">یونیک سیتی — CS2 Community Server</div>
+        </div>
+      </div>
+      <button class="rules-close" id="rules-close-btn" aria-label="بستن">✕</button>
+    </div>
+
+    <div class="rules-body">
+
+      <div class="rules-cat-title">⚔️ رفتار در بازی</div>
+
+      <div class="rule-item">
+        <div class="rule-num">۱</div>
+        <div class="rule-text">
+          <b>احترام متقابل اجباریه.</b>
+          <small>توهین، فحاشی، نژادپرستی یا هر نوع تحقیر بازیکن دیگه باعث میوت یا بن دائم میشه.</small>
+        </div>
+      </div>
+
+      <div class="rule-item">
+        <div class="rule-num">۲</div>
+        <div class="rule-text">
+          <b>تیم‌کیل عمدی ممنوعه.</b>
+          <small>کشتن هم‌تیمی به‌قصد آزاردادن یا بازی خراب کردن — بن فوری.</small>
+        </div>
+      </div>
+
+      <div class="rule-item">
+        <div class="rule-num">۳</div>
+        <div class="rule-text">
+          <b>بازی رو ترک نکن وسط مچ.</b>
+          <small>اگه اضطراری پیش اومد، تو چت به تیم اطلاع بده. ترک مکرر = بن موقت.</small>
+        </div>
+      </div>
+
+      <div class="rule-item">
+        <div class="rule-num">۴</div>
+        <div class="rule-text">
+          <b>اسپم میکروفون یا چت ممنوعه.</b>
+          <small>موزیک پخش کردن، صداهای مزاحم یا اسپم تایپی باعث میوت دائم میشه.</small>
+        </div>
+      </div>
+
+      <div class="rule-item">
+        <div class="rule-num">۵</div>
+        <div class="rule-text">
+          <b>تاکتیک‌ها و کال‌های تیم رو جدی بگیر.</b>
+          <small>در مچ‌های رنک، با تیم هماهنگ باش. لون‌ولف بازی کردن به ضرر همه‌ست.</small>
+        </div>
+      </div>
+
+      <div class="rules-cat-title">🚫 تقلب و سوءاستفاده</div>
+
+      <div class="rule-item">
+        <div class="rule-num">۶</div>
+        <div class="rule-text">
+          <b>هرگونه چیت یا هک = بن دائم بدون استثنا.</b>
+          <small>Wallhack، aimbot، speedhack یا هر نرم‌افزار کمکی تقلبی مجاز نیست.</small>
+        </div>
+      </div>
+
+      <div class="rule-item">
+        <div class="rule-num">۷</div>
+        <div class="rule-text">
+          <b>گلیچ و باگ‌های مپ رو سوءاستفاده نکن.</b>
+          <small>استفاده از نقاط خارج از محدوده مپ یا باگ‌های ناخواسته ممنوعه.</small>
+        </div>
+      </div>
+
+      <div class="rule-item">
+        <div class="rule-num">۸</div>
+        <div class="rule-text">
+          <b>حساب فیک و مولتی‌اکانت ممنوعه.</b>
+          <small>هر بازیکن فقط مجاز به یه اکانت در سرور هست. تخلف = بن همه اکانت‌ها.</small>
+        </div>
+      </div>
+
+      <div class="rules-cat-title">💬 رفتار در کامیونیتی</div>
+
+      <div class="rule-item">
+        <div class="rule-num">۹</div>
+        <div class="rule-text">
+          <b>تبلیغ سرور یا کانال دیگه ممنوعه.</b>
+          <small>هیچ لینک، آیدی یا اسمی از سرور یا گروه دیگه‌ای در چت مجاز نیست.</small>
+        </div>
+      </div>
+
+      <div class="rule-item">
+        <div class="rule-num">۱۰</div>
+        <div class="rule-text">
+          <b>ادمین‌ها رو احترام بذار.</b>
+          <small>تصمیمات ادمین نهاییه. اگه اعتراض داری، از کانال رسمی (تلگرام) پیگیری کن.</small>
+        </div>
+      </div>
+
+      <div class="rule-item">
+        <div class="rule-num">۱۱</div>
+        <div class="rule-text">
+          <b>بحث سیاسی و مذهبی ممنوعه.</b>
+          <small>این سرور فقط برای بازی و سرگرمیه. بحث‌های حساس رو خارج از سرور نگه دار.</small>
+        </div>
+      </div>
+
+      <div class="rule-item">
+        <div class="rule-num">۱۲</div>
+        <div class="rule-text">
+          <b>گزارش تخلف = کمک به همه.</b>
+          <small>اگه تخلفی دیدی از طریق تلگرام گزارش بده. گزارش‌های کینه‌جویانه هم پیگرد داره.</small>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="rules-footer">
+      <div class="rules-footer-note">آخرین بروزرسانی: <span>خرداد ۱۴۰۵</span></div>
+      <button class="rules-agree-btn" id="rules-agree-btn">فهمیدم، بریم بازی ✓</button>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ── ADMINS MODAL ── -->
+<div id="admins-overlay" role="dialog" aria-modal="true" aria-labelledby="admins-modal-title">
+  <div id="admins-modal">
+
+    <div class="rules-header">
+      <div class="rules-header-left">
+        <div class="rules-icon">🛡</div>
+        <div>
+          <div class="rules-title" id="admins-modal-title">تیم ادمین‌ها</div>
+          <div class="rules-subtitle">یونیک سیتی — CS2 Community Server</div>
+        </div>
+      </div>
+      <button class="rules-close" id="admins-close-btn" aria-label="بستن">✕</button>
+    </div>
+
+    <div class="admins-body" id="admins-body"></div>
+
+  </div>
+</div>
+
+
+
+<!-- ── JOIN MODAL ── -->
+<div id="join-overlay" role="dialog" aria-modal="true" aria-label="فرم عضویت">
+  <div id="join-modal">
+
+    <div class="join-header">
+      <div class="join-header-left">
+        <div class="join-icon">🎮</div>
+        <div>
+          <div class="join-title">عضویت در کامیونیتی</div>
+          <div class="join-sub">یونیک سیتی — CS2 Server</div>
+        </div>
+      </div>
+      <button class="join-close" id="join-close-btn">✕</button>
+    </div>
+
+    <div class="join-stats">
+      <div class="join-stat">
+        <div class="join-stat-num">24/7</div>
+        <div class="join-stat-lbl">آنلاین</div>
+      </div>
+      <div class="join-stat">
+        <div class="join-stat-num">CS2</div>
+        <div class="join-stat-lbl">پلتفرم</div>
+      </div>
+      <div class="join-stat">
+        <div class="join-stat-num">رایگان</div>
+        <div class="join-stat-lbl">عضویت</div>
+      </div>
+    </div>
+
+    <div class="join-body" id="join-form-body">
+      <div class="join-field">
+        <label class="join-label" for="join-username">نام کاربری</label>
+        <div class="join-input-wrap">
+          <input class="join-input" id="join-username" type="text" placeholder="مثال: Sniper_IRL" autocomplete="off" maxlength="20">
+        </div>
+      </div>
+      <div class="join-field">
+        <label class="join-label" for="join-password">رمز عبور</label>
+        <div class="join-input-wrap">
+          <input class="join-input" id="join-password" type="password" placeholder="حداقل ۸ کاراکتر" autocomplete="new-password">
+        </div>
+        <div class="strength-wrap">
+          <div class="strength-bars">
+            <div class="strength-seg" id="seg1"></div>
+            <div class="strength-seg" id="seg2"></div>
+            <div class="strength-seg" id="seg3"></div>
+            <div class="strength-seg" id="seg4"></div>
+            <div class="strength-seg" id="seg5"></div>
+          </div>
+          <div class="strength-row">
+            <div class="strength-label" id="strength-label"></div>
+            <div class="strength-tips" id="strength-tips"></div>
+          </div>
+        </div>
+      </div>
+      <div class="join-divider">عضویت رایگانه</div>
+      <div class="join-err" id="join-err"></div>
+      <button class="join-submit" id="join-submit-btn">ثبت عضویت در یونیک سیتی</button>
+      <div class="join-footer-note">با عضویت، <button class="join-rules-link" id="join-open-rules">قوانین سرور</button> رو می‌پذیری</div>
+    </div>
+
+    <div class="join-success" id="join-success">
+      <div class="join-success-ico">🎉</div>
+      <div class="join-success-title">خوش اومدی!</div>
+      <div class="join-success-txt">سلام <span class="join-success-username" id="success-username"></span>!<br>عضویتت با موفقیت ثبت شد.</div>
+      <div class="join-success-rules">
+        <div class="join-success-rules-title">📋 یه بار قوانین رو مرور کن</div>
+        <div class="join-success-rules-item"><b>۱.</b> احترام متقابل اجباریه — فحاشی = بن</div>
+        <div class="join-success-rules-item"><b>۲.</b> تیم‌کیل عمدی = بن فوری</div>
+        <div class="join-success-rules-item"><b>۳.</b> وسط مچ ترک نکن</div>
+        <div class="join-success-rules-item"><b>۴.</b> اسپم میکروفون و چت ممنوعه</div>
+        <div class="join-success-rules-item"><b>۵.</b> هرگونه چیت = بن دائم</div>
+        <div class="join-success-rules-item"><b>۶.</b> تبلیغ سرور دیگه ممنوعه</div>
+        <div class="join-success-rules-item"><b>۷.</b> احترام به تصمیمات ادمین</div>
+      </div>
+      <button class="join-success-close" id="join-success-close">فهمیدم، بریم بازی 🎮</button>
+    </div>
+
+  </div>
+</div>
+
+
+<script>
+
+// ── STAGGER REVEAL HELPER ──
+// روی هر لیست پویا (کارت خبر، ردیف رنکینگ، آیتم ادمین) صدا زده میشه؛ هر آیتم
+// رو با یه تاخیر کوچیک نسبت به قبلی محو→نمایان می‌کنه. بعد از تموم شدن گذار،
+// کلاس‌ها و استایل‌های مربوطه رو کامل پاک می‌کنه تا هیچ تداخلی با hover:transform
+// اون عنصر تو آینده پیش نیاد.
+function staggerReveal(container, selector, stepMs) {
+  if (!container) return;
+  var items = container.querySelectorAll(selector);
+  items.forEach(function(item, i) {
+    item.classList.add('stagger-item');
+    item.style.transitionDelay = (i * stepMs) + 'ms';
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        item.classList.add('stagger-on');
+      });
+    });
+    item.addEventListener('transitionend', function cleanup(e) {
+      if (e.propertyName !== 'transform') return;
+      item.classList.remove('stagger-item', 'stagger-on');
+      item.style.transitionDelay = '';
+      item.removeEventListener('transitionend', cleanup);
+    });
+  });
+}
+
+// ── SITE INTRO EXTRAS (بخار پویا + صدای خوش‌آمد) ──
+// نکته‌ی مهم: از این به بعد این IIFE هیچ نقشی تو نمایش خود سایت نداره —
+// نمایش سایت الان کاملاً با CSS خالص (@keyframes) انجام میشه، مستقل از این
+// اسکریپت. این بخش فقط دو تا افکت تزئینی اضافه‌ست (پاف‌های بخار + صدا)؛
+// اگه هرکدوم شکست بخورن یا کلاً اجرا نشن، سایت عادی و کامل کار می‌کنه.
+(function() {
+  try {
+    var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduceMotion) return;
+  } catch (e) { /* اگه matchMedia هم نبود، فرض می‌کنیم موشن مشکلی نداره و ادامه می‌دیم */ }
+
+  function spawnSteam() {
+    try {
+      var host = document.getElementById('intro-steam');
+      if (!host) return;
+      var w = window.innerWidth;
+      var h = window.innerHeight;
+      var count = 9; // عمداً کم نگه داشته شده که رو گوشی‌های ضعیف سنگین نشه
+      for (var i = 0; i < count; i++) {
+        var puff = document.createElement('div');
+        puff.className = 'intro-steam-puff';
+        // پخش‌شده رو کل عرض/ارتفاع صفحه، نه فقط وسط — حس رد شدن از داخل مه
+        var x = w * (0.1 + Math.random() * 0.8);
+        var y = h * (0.25 + Math.random() * 0.6);
+        puff.style.left = x + 'px';
+        puff.style.top = y + 'px';
+        puff.style.animationDelay = (Math.random() * 260) + 'ms';
+        host.appendChild(puff);
+        requestAnimationFrame(function (el) {
+          return function () { el.classList.add('go'); };
+        }(puff));
+      }
+      setTimeout(function () { host.innerHTML = ''; }, 2200);
+    } catch (e) { /* صرفاً تزئینیه، اگه شکست خورد بی‌خیالش شو */ }
+  }
+
+  function pickFemaleVoice(voices) {
+    var hints = ['female', 'zira', 'samantha', 'victoria', 'aria', 'susan',
+      'karen', 'moira', 'tessa', 'fiona', 'google us english', 'google uk english female'];
+    var enVoices = voices.filter(function (v) { return /^en/i.test(v.lang); });
+    var byHint = null;
+    for (var i = 0; i < enVoices.length; i++) {
+      var n = enVoices[i].name.toLowerCase();
+      if (hints.some(function (h) { return n.indexOf(h) !== -1; })) { byHint = enVoices[i]; break; }
+    }
+    return byHint || enVoices[0] || voices[0] || null;
+  }
+
+  function speakWelcomeViaSynthesis() {
+    // فقط به‌عنوان آخرین راه‌حل استفاده میشه، اگه فایل mp3 هر دلیلی لود/پخش نشد.
+    // این API رو نمیشه بهش تکیه کرد — خیلی از مرورگرهای موبایل اصلاً صدایی
+    // براش ثبت نکردن (voices خالیه) و ساکت می‌مونه.
+    if (!('speechSynthesis' in window)) return;
+    function go() {
+      try {
+        var voices = speechSynthesis.getVoices();
+        if (!voices.length) return;
+        var utter = new SpeechSynthesisUtterance('Welcome to Unique City.');
+        var voice = pickFemaleVoice(voices);
+        if (voice) utter.voice = voice;
+        utter.rate = 0.95;
+        utter.pitch = 1.05;
+        utter.volume = 0.9;
+        speechSynthesis.cancel();
+        speechSynthesis.speak(utter);
+      } catch (e) {}
+    }
+    var existing = speechSynthesis.getVoices();
+    if (existing.length) { go(); } else { speechSynthesis.onvoiceschanged = go; }
+  }
+
+  function speakWelcome() {
+    // راه اصلی: پخش یه فایل mp3 واقعی (صدای زنانه‌ی از‌پیش‌تولیدشده)، نه
+    // Web Speech API که رو خیلی از گوشی‌ها اصلاً کار نمی‌کنه (صداش خالیه).
+    var audio = new Audio('audio/welcome.mp3');
+    audio.volume = 0.85;
+    var played = false;
+
+    function tryPlay() {
+      if (played) return;
+      var p = audio.play();
+      if (p && typeof p.then === 'function') {
+        p.then(function () { played = true; }).catch(function () {
+          // مرورگر (معمولاً موبایل) بدون تعامل کاربر بلاکش کرده؛
+          // منتظر اولین لمس/کلیک واقعی می‌مونیم و دوباره امتحان می‌کنیم.
+        });
+      } else {
+        played = true;
+      }
+    }
+
+    audio.addEventListener('error', function () {
+      // اگه خود فایل mp3 لود نشد (مثلاً مسیرش اشتباه آپلود شده)، فال‌بک به Web Speech
+      speakWelcomeViaSynthesis();
+    });
+
+    tryPlay();
+    ['click', 'touchstart', 'keydown'].forEach(function (ev) {
+      document.addEventListener(ev, function retry() {
+        if (!played) tryPlay();
+      }, { once: true, passive: true });
+    });
+  }
+
+  var revealed = false;
+  function runExtras() {
+    if (revealed) return;
+    revealed = true;
+    spawnSteam();
+    speakWelcome();
+    // خود لایه‌ی مه با CSS خالص محو میشه (بالا ببین: fogFadeOut)، اینجا فقط
+    // بعد از تموم شدنش، عنصرش رو کامل از DOM پاک می‌کنیم که هیچ‌وقت (حتی
+    // نامرئی) رو مسیر کلیک/لمس بقیه‌ی سایت قرار نگیره. اگه این هم شکست بخوره
+    // (مثلاً عنصر پیدا نشد)، هیچ فرقی به حال بقیه‌ی سایت نداره چون
+    // pointer-events:none روش هست.
+    try {
+      setTimeout(function () {
+        var fogOverlay = document.getElementById('intro-doors');
+        if (fogOverlay && fogOverlay.parentNode) fogOverlay.parentNode.removeChild(fogOverlay);
+      }, 1300);
+    } catch (e) {}
+  }
+  if (document.readyState === 'complete') {
+    runExtras();
+  } else {
+    window.addEventListener('load', runExtras);
+  }
+  // fallback: حتی اگه رویداد load به هر دلیلی نیومد، حداکثر ۱.۲ ثانیه صبر می‌کنیم
+  setTimeout(runExtras, 1200);
+})();
+
+// ── JOIN MODAL
+(function() {
+  var SUPA_URL = "https://fabrlmzwrnfsgbxunodk.supabase.co";
+  var SUPA_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZhYnJsbXp3cm5mc2dieHVub2RrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEzOTg5MjMsImV4cCI6MjA5Njk3NDkyM30.oOS54U5aXrRjHZYeNVBs48p5834S-IlmpuXJ_-D4UPs";
+
+  var overlay   = document.getElementById('join-overlay');
+  var formBody  = document.getElementById('join-form-body');
+  var successEl = document.getElementById('join-success');
+  var errEl     = document.getElementById('join-err');
+  var submitBtn = document.getElementById('join-submit-btn');
+  var pwInput   = document.getElementById('join-password');
+  // strength handled by segs
+  var barLabel  = document.getElementById('strength-label');
+
+  function openJoin(e) {
+    if (e) e.preventDefault();
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeJoin() {
+    overlay.classList.remove('open');
+    document.body.style.overflow = '';
+    // reset after close
+    setTimeout(function() {
+      formBody.style.display = '';
+      successEl.classList.remove('show');
+      document.getElementById('join-username').value = '';
+      pwInput.value = '';
+      errEl.textContent = ''; errEl.classList.remove('show');
+      bar.style.width = '0%';
+      barLabel.textContent = '';
+      submitBtn.disabled = false;
+    }, 400);
+  }
+
+  document.getElementById('open-join-btn').addEventListener('click', openJoin);
+  document.getElementById('join-close-btn').addEventListener('click', closeJoin);
+  // rules link inside join modal
+  document.addEventListener('click', function(e) {
+    if (e.target && e.target.id === 'join-open-rules') {
+      closeJoin();
+      setTimeout(function() {
+        var rulesOverlay = document.getElementById('rules-overlay');
+        if (rulesOverlay) {
+          rulesOverlay.classList.add('open');
+          document.body.style.overflow = 'hidden';
+        }
+      }, 450);
+    }
+  });
+  document.getElementById('join-success-close').addEventListener('click', closeJoin);
+  overlay.addEventListener('click', function(e) { if (e.target === overlay) closeJoin(); });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && overlay.classList.contains('open')) closeJoin();
+  });
+
+  // ── PASSWORD STRENGTH
+  var segs = [
+    document.getElementById('seg1'),
+    document.getElementById('seg2'),
+    document.getElementById('seg3'),
+    document.getElementById('seg4'),
+    document.getElementById('seg5')
+  ];
+  pwInput.addEventListener('input', function() {
+    var pw = pwInput.value;
+    var score = 0;
+    if (pw.length >= 8)  score++;
+    if (pw.length >= 12) score++;
+    if (/[A-Z]/.test(pw)) score++;
+    if (/[0-9]/.test(pw)) score++;
+    if (/[^A-Za-z0-9]/.test(pw)) score++;
+
+    var colors = ['#ef4444','#f97316','#eab308','#22c55e','#16a34a'];
+    var labels = ['خیلی ضعیف 🔴','ضعیف 🟠','متوسط 🟡','قوی 🟢','خیلی قوی ✅'];
+    var tips   = ['طولش رو بیشتر کن','عدد اضافه کن','حرف بزرگ اضافه کن','عالیه!','بی‌نقصه!'];
+
+    segs.forEach(function(s, i) {
+      if (pw.length === 0) {
+        s.style.background = 'rgba(255,255,255,.08)';
+      } else if (i < score) {
+        s.style.background = colors[score-1];
+      } else {
+        s.style.background = 'rgba(255,255,255,.08)';
+      }
+    });
+
+    if (pw.length === 0) {
+      barLabel.textContent = '';
+      barLabel.style.color = '';
+      document.getElementById('strength-tips').textContent = '';
+    } else {
+      barLabel.textContent = labels[score-1];
+      barLabel.style.color = colors[score-1];
+      document.getElementById('strength-tips').textContent = tips[score-1];
+    }
+  });
+
+  // ── HASH PASSWORD (SHA-256)
+  async function hashPassword(pw) {
+    var enc = new TextEncoder().encode(pw);
+    var buf = await crypto.subtle.digest('SHA-256', enc);
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+  }
+
+  // ── SUBMIT
+  submitBtn.addEventListener('click', async function() {
+    errEl.textContent = ''; errEl.classList.remove('show');
+    var username = document.getElementById('join-username').value.trim();
+    var password = pwInput.value;
+
+    if (!username) { errEl.textContent = 'نام کاربری رو وارد کن'; return; }
+    if (username.length < 3) { errEl.textContent = 'نام کاربری حداقل ۳ کاراکتر باشه'; return; }
+    if (!/^[a-zA-Z0-9_]+$/.test(username)) { errEl.textContent = 'فقط حروف انگلیسی، عدد و _ مجازه'; return; }
+    if (password.length < 8) { errEl.textContent = 'رمز عبور حداقل ۸ کاراکتر باشه'; return; }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'در حال ثبت...';
+
+    try {
+      var hash = await hashPassword(password);
+      var res = await fetch(SUPA_URL + '/rest/v1/members', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPA_KEY,
+          'Authorization': 'Bearer ' + SUPA_KEY,
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({ username: username, password_hash: hash })
+      });
+
+      if (res.status === 201) {
+        document.getElementById('success-username').textContent = username;
+        formBody.style.display = 'none';
+        successEl.classList.add('show');
+      } else if (res.status === 409) {
+        errEl.textContent = 'این نام کاربری قبلاً ثبت شده';
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'ثبت عضویت';
+      } else {
+        var data = await res.json();
+        errEl.textContent = 'خطا: ' + (data.message || 'لطفاً دوباره امتحان کن');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'ثبت عضویت';
+      }
+    } catch(err) {
+      errEl.textContent = 'خطای اتصال — دوباره امتحان کن';
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'ثبت عضویت';
+    }
+  });
+})();
+
+// ── RULES MODAL
+(function() {
+  var overlay = document.getElementById('rules-overlay');
+  function openRules(e) {
+    if (e) e.preventDefault();
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeRules() {
+    overlay.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  var openBtn = document.getElementById('open-rules-btn');
+  if (openBtn) openBtn.addEventListener('click', openRules);
+  document.getElementById('rules-close-btn').addEventListener('click', closeRules);
+  document.getElementById('rules-agree-btn').addEventListener('click', closeRules);
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay) closeRules();
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      if (overlay.classList.contains('open')) closeRules();
+      else closeAllPopups();
+    }
+  });
+})();
+
+// ── HERO VIDEO: random CS2/gaming clip each load + aggressive retry + random-photo fallback ──
+(function() {
+  var video = document.getElementById('heroVideo');
+  var wrap  = document.getElementById('heroVideoWrap');
+  var heroBg = document.querySelector('.hero-bg');
+  if (!video) return;
+
+  // استخر ویدیوها — کلیپ‌های گیمینگ/CS2 (مسیرها همگی مستقیم و تاییدشده از Mixkit)
+  var pool = [
+    'https://assets.mixkit.co/videos/43527/43527-360.mp4', // دست بازیکن روی کیبورد نورپردازی‌شده
+    'https://assets.mixkit.co/videos/43524/43524-360.mp4', // گروه دوستان در حال بازی آنلاین
+    'https://assets.mixkit.co/videos/51602/51602-360.mp4', // گیمر جلوی مانیتور با ریگ RGB
+    'https://assets.mixkit.co/videos/51604/51604-360.mp4', // گیمر با مهارت موس رو حرکت میده
+    'https://assets.mixkit.co/videos/51608/51608-360.mp4', // فشردن مداوم کیبورد بک‌لایت در حین بازی
+    'https://assets.mixkit.co/videos/51616/51616-360.mp4', // دست‌ها در یک سشن بازی فشرده
+    'https://assets.mixkit.co/videos/5502/5502-360.mp4',   // اتاق گیمینگ مدرن با PC و صندلی
+    'https://assets.mixkit.co/videos/51603/51603-360.mp4'  // دوربین روی دست‌های ماهر گیمر
+  ];
+  // عکس‌های رندوم پشتیبان — اگه هیچ‌کدوم از ویدیوها لود نشدن، این‌ها به‌جاش میان
+  var photoPool = [
+    'https://commons.wikimedia.org/wiki/Special:FilePath/MLG%20Columbus%20-%20Luminosity%20vs%20Navi.jpg',
+    'https://commons.wikimedia.org/wiki/Special:FilePath/Huddle%20in%20eSports.jpg',
+    'https://commons.wikimedia.org/wiki/Special:FilePath/IEM%202015%20San%20Jose%20Day%202%20-%2017.jpg',
+    'https://commons.wikimedia.org/wiki/Special:FilePath/BLAST%20Backstage%202020%20FaZe%20Clan.jpg',
+    'https://commons.wikimedia.org/wiki/Special:FilePath/WCG%20Grand%20Finals%202010%2019.jpg'
+  ];
+  // ترتیب رو رندوم می‌کنیم؛ اگه اولی جواب نداد میره سراغ بعدی‌های همون چرخش رندوم
+  var sources = pool.slice().sort(function () { return Math.random() - 0.5; });
+  var photos  = photoPool.slice().sort(function () { return Math.random() - 0.5; });
+
+  var srcIndex = 0;
+  var retryCount = 0;
+  var MAX_RETRY_PER_SOURCE = 4;
+  var gaveUp = false;
+  var photoRotateTimer = null;
+
+  function showVideo() {
+    wrap.style.opacity = '1';
+    if (photoRotateTimer) { clearInterval(photoRotateTimer); photoRotateTimer = null; }
+  }
+
+  function setBgPhoto(url) {
+    if (heroBg) heroBg.style.backgroundImage =
+      "radial-gradient(ellipse 60% 50% at 40% 45%, rgba(147,169,184,.14) 0%, transparent 70%)," +
+      "linear-gradient(160deg, rgba(9,12,14,.88) 0%, rgba(12,16,19,.88) 100%)," +
+      "url('" + url + "')";
+  }
+
+  function startPhotoRotation() {
+    var pIndex = 0;
+    setBgPhoto(photos[pIndex]);
+    if (photoRotateTimer) clearInterval(photoRotateTimer);
+    photoRotateTimer = setInterval(function () {
+      pIndex = (pIndex + 1) % photos.length;
+      setBgPhoto(photos[pIndex]);
+    }, 8000);
+  }
+
+  function hideVideoKeepPhoto() {
+    // لایه‌ی ویدیو مخفی میشه و به‌جاش عکس‌های رندوم پشت‌سرهم نمایش داده میشن
+    wrap.style.opacity = '0';
+    startPhotoRotation();
+  }
+
+  function loadSource(i) {
+    video.src = sources[i] + '?r=' + Date.now(); // جلوگیری از کش خراب/نیمه‌دانلود
+    video.load();
+    attemptPlay();
+  }
+
+  function retryOrAdvance() {
+    if (gaveUp) return;
+    retryCount++;
+    if (retryCount <= MAX_RETRY_PER_SOURCE) {
+      setTimeout(function () { loadSource(srcIndex); }, 900 * retryCount);
+    } else if (srcIndex < sources.length - 1) {
+      srcIndex++;
+      retryCount = 0;
+      loadSource(srcIndex);
+    } else {
+      // همه‌ی منابع تمام شد؛ عکس‌های رندوم رو نگه دار و هر ۱۰ ثانیه دوباره کل چرخه رو امتحان کن
+      hideVideoKeepPhoto();
+      srcIndex = 0; retryCount = 0;
+      setTimeout(function () { gaveUp = false; loadSource(srcIndex); }, 10000);
+      gaveUp = true;
+    }
+  }
+
+  function attemptPlay() {
+    video.muted = true;
+    video.defaultMuted = true;
+    video.playsInline = true;
+    var p = video.play();
+    if (p && typeof p.catch === 'function') {
+      p.catch(function () {
+        setTimeout(function () {
+          video.muted = true;
+          video.play().catch(function () {});
+        }, 250);
+      });
+    }
+  }
+
+  video.addEventListener('error', retryOrAdvance, true);
+  video.addEventListener('stalled', function () {
+    if (video.readyState === 0) retryOrAdvance();
+  });
+  video.addEventListener('canplay', function () { showVideo(); attemptPlay(); });
+  video.addEventListener('playing', showVideo);
+
+  // اگه بعد از ۵ ثانیه از هر تلاش هیچ فریمی نیومده بود، دوباره امتحان کن
+  function watchdog() {
+    if (video.readyState === 0 || video.paused) retryOrAdvance();
+  }
+  setInterval(watchdog, 5000);
+
+  // خیلی از مرورگرها/وب‌ویوها فقط بعد از اولین تعامل کاربر اجازه‌ی پخش میدن
+  ['touchstart', 'click', 'scroll', 'visibilitychange'].forEach(function (ev) {
+    document.addEventListener(ev, function () {
+      if (document.visibilityState === 'hidden') return;
+      attemptPlay();
+    }, { passive: true });
+  });
+
+  loadSource(0);
+})();
+
+// ── NAV SCROLL
+var navbar = document.getElementById('navbar');
+window.addEventListener('scroll', function(){
+  navbar.classList.toggle('scrolled', window.scrollY > 50);
+}, { passive: true });
+
+// ── SCROLL REVEAL ──
+// این تو try/catch پیچیده شده چون یه statement سطح‌بالاست: اگه IntersectionObserver
+// (به هر دلیل نادری) throw کنه و اینجا محافظت نشه، همه‌ی کدهای بعدش تو همین
+// اسکریپت (پاپ‌آپ‌ها، دکمه‌های کپی، اخبار، رنکینگ، مودال ادمین) هم اجرا نمی‌شن.
+try {
+  var revEls = document.querySelectorAll('.reveal');
+  if ('IntersectionObserver' in window) {
+    var revObs = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){ if(e.isIntersecting) e.target.classList.add('on'); });
+    }, { threshold: 0.1 });
+    revEls.forEach(function(el){ revObs.observe(el); });
+  } else {
+    // مرورگر خیلی قدیمی که IntersectionObserver رو نداره: همه رو مستقیم نشون بده
+    revEls.forEach(function(el){ el.classList.add('on'); });
+  }
+} catch (e) {
+  document.querySelectorAll('.reveal').forEach(function(el){ el.classList.add('on'); });
+}
+// شبکه‌ی ایمنی نهایی: هر چقدر هم منطق بالا شکست بخوره، حداکثر بعد از ۴ ثانیه
+// همه‌ی سکشن‌ها به‌زور نمایان میشن — یعنی هیچ بخشی از سایت نمی‌تونه برای همیشه
+// نامرئی بمونه، مهم نیست چه چیزی تو مرورگر کاربر خراب شده باشه.
+setTimeout(function () {
+  document.querySelectorAll('.reveal:not(.on)').forEach(function(el){ el.classList.add('on'); });
+}, 4000);
+
+// ── POPUP HELPERS
+function openPopup(id) {
+  document.querySelectorAll('.popup').forEach(function(p){ p.classList.remove('open'); });
+  var el = document.getElementById(id);
+  if (el) el.classList.add('open');
+}
+function closeAllPopups() {
+  document.querySelectorAll('.popup').forEach(function(p){ p.classList.remove('open'); });
+}
+document.getElementById('sv-btn').addEventListener('click', function(e){
+  e.stopPropagation();
+  var p = document.getElementById('sv-popup');
+  if (p.classList.contains('open')) { p.classList.remove('open'); } else { openPopup('sv-popup'); }
+});
+document.getElementById('ts-btn').addEventListener('click', function(e){
+  e.stopPropagation();
+  var p = document.getElementById('ts-popup');
+  if (p.classList.contains('open')) { p.classList.remove('open'); } else { openPopup('ts-popup'); }
+});
+document.getElementById('tg-btn').addEventListener('click', function(e){
+  e.stopPropagation();
+  var p = document.getElementById('tg-popup');
+  if (p.classList.contains('open')) { p.classList.remove('open'); } else { openPopup('tg-popup'); }
+});
+document.addEventListener('click', function(e){
+  if (!e.target.closest('.popup') && !e.target.closest('#ts-btn') && !e.target.closest('#tg-btn') && !e.target.closest('#sv-btn')) {
+    closeAllPopups();
+  }
+});
+
+// ── TOAST HELPER
+function showToast(id) {
+  var t = document.getElementById(id);
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2400);
+}
+
+// ── COPY HELPERS
+function fallbackCopy(text) {
+  var ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;';
+  document.body.appendChild(ta);
+  ta.focus(); ta.select();
+  try { document.execCommand('copy'); } catch(e) {}
+  document.body.removeChild(ta);
+}
+function doCopy(text, toastId) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(function(){ showToast(toastId); }).catch(function(){
+      fallbackCopy(text); showToast(toastId);
+    });
+  } else {
+    fallbackCopy(text); showToast(toastId);
+  }
+}
+function copyTs() { doCopy('217.18.90.7:1254', 'toast-ts'); }
+function copyTg() { doCopy('https://t.me/unique3ity', 'toast-tg'); }
+function copySv() { doCopy('5.57.32.32:28208', 'toast-sv'); }
+function connectServer() { showToast('toast-connect'); }
+function openTg() {
+  closeAllPopups();
+  window.open('https://t.me/unique3ity', '_blank');
+}
+
+// ── ADMINS MODAL ──
+(function() {
+  var names = ['Vmaster', 'lystrix', 'Amir', 'Znone', '3moky', 'Kamyar', 'Amir', 'Snmi', 'Amir'];
+  var body = document.getElementById('admins-body');
+  if (body) {
+    names.forEach(function(name){
+      var row = document.createElement('div');
+      row.className = 'admin-item';
+      var avatar = document.createElement('div');
+      avatar.className = 'admin-avatar';
+      avatar.textContent = name.charAt(0).toUpperCase();
+      var nm = document.createElement('div');
+      nm.className = 'admin-name';
+      nm.textContent = name;
+      row.appendChild(avatar);
+      row.appendChild(nm);
+      body.appendChild(row);
+    });
+  }
+  var overlay = document.getElementById('admins-overlay');
+  var card = document.getElementById('admins-card');
+  var closeBtn = document.getElementById('admins-close-btn');
+  function openAdmins() {
+    if (overlay) overlay.classList.add('open');
+    // هر بار که مودال باز میشه، ورود آیتم‌ها رو با تاخیر پشت‌سرهم دوباره اجرا می‌کنیم
+    staggerReveal(body, '.admin-item', 45);
+  }
+  function closeAdmins() { if (overlay) overlay.classList.remove('open'); }
+  if (card) {
+    card.addEventListener('click', openAdmins);
+    card.addEventListener('keydown', function(e){
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openAdmins(); }
+    });
+  }
+  if (closeBtn) closeBtn.addEventListener('click', closeAdmins);
+  if (overlay) overlay.addEventListener('click', function(e){ if (e.target === overlay) closeAdmins(); });
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape' && overlay && overlay.classList.contains('open')) closeAdmins();
+  });
+})();
+
+// ── NEWS & TOURNAMENTS (powered by Supabase) ──
+(function() {
+  // ⚙️ این دو مقدار رو بعد از ساخت پروژه Supabase از بخش Settings → API بردار و اینجا جایگزین کن.
+  // SUPABASE_URL همون "Project URL" هست و SUPABASE_ANON_KEY همون کلید عمومی "anon public" هست (نه service_role!).
+  var SUPABASE_URL = 'https://fabrlmzwrnfsgbxunodk.supabase.co';
+  var SUPABASE_ANON_KEY = 'sb_publishable__nEiKozPyWrv3EF29jb_TQ_KXn-HSOi';
+  var TABLE = 'cs_news';
+  var isConfigured = SUPABASE_URL.indexOf('YOUR_SUPABASE') === -1 && SUPABASE_ANON_KEY.indexOf('YOUR_SUPABASE') === -1;
+
+  var grid = document.getElementById('news-grid');
+  if (!grid) return;
+
+  var TYPE_LABEL = { news: 'خبر', tournament: 'تورنومنت', update: 'آپدیت بازی', workshop: 'ورک‌شاپ' };
+  var allItems = [];
+  var currentFilter = 'all';
+
+  function esc(str) {
+    var d = document.createElement('div');
+    d.textContent = str == null ? '' : str;
+    return d.innerHTML;
+  }
+
+  function timeAgoFa(iso) {
+    if (!iso) return '';
+    var diffMs = Date.now() - new Date(iso).getTime();
+    var mins = Math.floor(diffMs / 60000);
+    if (mins < 1) return 'همین الان';
+    if (mins < 60) return mins + ' دقیقه پیش';
+    var hrs = Math.floor(mins / 60);
+    if (hrs < 24) return hrs + ' ساعت پیش';
+    var days = Math.floor(hrs / 24);
+    if (days < 30) return days + ' روز پیش';
+    var months = Math.floor(days / 30);
+    if (months < 12) return months + ' ماه پیش';
+    return Math.floor(months / 12) + ' سال پیش';
+  }
+
+  function renderSkeletons(n) {
+    var html = '';
+    for (var i = 0; i < n; i++) {
+      html += '<div class="news-skel">' +
+        '<div class="news-skel-img"></div>' +
+        '<div class="news-skel-body">' +
+          '<div class="news-skel-line w40"></div>' +
+          '<div class="news-skel-line"></div>' +
+          '<div class="news-skel-line w60"></div>' +
+        '</div>' +
+      '</div>';
+    }
+    grid.innerHTML = html;
+  }
+
+  function renderEmpty(message, showRetry) {
+    grid.innerHTML =
+      '<div class="news-empty">' +
+        '<span class="news-empty-icon">📰</span>' +
+        esc(message) +
+        (showRetry ? '<br><span class="news-retry" id="news-retry-btn">تلاش دوباره</span>' : '') +
+      '</div>';
+    var btn = document.getElementById('news-retry-btn');
+    if (btn) btn.addEventListener('click', loadNews);
+  }
+
+  function renderItems() {
+    var items = currentFilter === 'all' ? allItems : allItems.filter(function(it){ return it.type === currentFilter; });
+    if (!items.length) {
+      renderEmpty('فعلاً خبری تو این دسته ثبت نشده. کمی بعد دوباره سر بزن.', false);
+      return;
+    }
+    var fallbackImg = 'https://commons.wikimedia.org/wiki/Special:FilePath/MLG%20Columbus%20-%20Luminosity%20vs%20Navi.jpg';
+    grid.innerHTML = items.map(function(it) {
+      var type = TYPE_LABEL[it.type] ? it.type : 'news';
+      var img = it.image_url || fallbackImg;
+      return '<a class="news-card" href="' + esc(it.source_url || '#') + '" target="_blank" rel="noopener">' +
+        '<div class="news-card-img" style="background-image:url(\'' + esc(img).replace(/'/g,"") + '\')"></div>' +
+        '<div class="news-card-body">' +
+          '<span class="news-badge ' + type + '">' + esc(TYPE_LABEL[type]) + '</span>' +
+          '<div class="news-title">' + esc(it.title) + '</div>' +
+          '<div class="news-summary">' + esc(it.summary || '') + '</div>' +
+          '<div class="news-meta"><span class="news-source">' + esc(it.source_name || '') + '</span><span>' + timeAgoFa(it.published_at) + '</span></div>' +
+        '</div>' +
+      '</a>';
+    }).join('');
+    // حداکثر ۱۲ آیتم اول تاخیر پشت‌سرهم می‌گیرن؛ بعدش که واقعاً پرش می‌کنیم که کند نشه
+    staggerReveal(grid, '.news-card', 45);
+  }
+
+  function loadNews() {
+    if (!isConfigured) {
+      renderEmpty('این بخش به‌زودی با اخبار و تورنومنت‌های زنده‌ی CS2 فعال می‌شه.', false);
+      return;
+    }
+    renderSkeletons(6);
+    var url = SUPABASE_URL.replace(/\/$/, '') + '/rest/v1/' + TABLE +
+      '?select=id,type,title,summary,source_name,source_url,image_url,published_at' +
+      '&order=published_at.desc&limit=30';
+    fetch(url, {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+      }
+    })
+    .then(function(res) {
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    })
+    .then(function(data) {
+      allItems = Array.isArray(data) ? data : [];
+      if (!allItems.length) {
+        renderEmpty('فعلاً خبری ثبت نشده. رباط هر ۶ ساعت یه‌بار به‌روزرسانی می‌کنه، بعداً سر بزن.', false);
+        return;
+      }
+      renderItems();
+    })
+    .catch(function(err) {
+      console.error('news fetch failed:', err);
+      renderEmpty('اتصال به سرور اخبار برقرار نشد.', true);
+    });
+  }
+
+  document.querySelectorAll('.news-filter').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.news-filter').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      currentFilter = btn.getAttribute('data-filter');
+      if (allItems.length || !isConfigured) renderItems();
+    });
+  });
+
+  // طبق درخواست: بار اول بلافاصله لود نشه، فقط بعد از اولین اسکرول کاربر لود بشه
+  window.addEventListener('scroll', loadNews, { once: true, passive: true });
+})();
+
+// ── LIVE SERVER STATUS ──
+(function() {
+  var SUPABASE_URL = 'https://fabrlmzwrnfsgbxunodk.supabase.co';
+  var SUPABASE_ANON_KEY = 'sb_publishable__nEiKozPyWrv3EF29jb_TQ_KXn-HSOi';
+  var badge = document.getElementById('server-status-badge');
+  if (!badge) return;
+
+  var url = SUPABASE_URL + '/rest/v1/cs_server_status?select=online,players,max_players,map_name&id=eq.1';
+  fetch(url, {
+    headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY }
+  })
+  .then(function(res) { if (!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
+  .then(function(rows) {
+    var row = Array.isArray(rows) && rows[0];
+    if (!row) return; // چیزی ثبت نشده هنوز، بج نمایش داده نمیشه (بهتر از نمایش عدد جعلی)
+    if (row.online) {
+      badge.innerHTML =
+        '<span class="ssb-dot online"></span>' +
+        '<b>' + row.players + '/' + row.max_players + '</b> بازیکن آنلاین' +
+        (row.map_name ? ' — نقشه‌ی <b>' + row.map_name + '</b>' : '');
+    } else {
+      badge.innerHTML = '<span class="ssb-dot offline"></span> سرور فعلاً آفلاینه';
+    }
+    badge.classList.add('show');
+  })
+  .catch(function() { /* best-effort — اگه نگرفتیم، بج ساکت می‌مونه، به کاربر عدد اشتباه نشون نمی‌دیم */ });
+})();
+
+// ── آنالیتیکس ساده (بدون کوکی، بدون شناسه‌ی شخصی) ──
+// فقط مسیر صفحه و ریفرر رو ثبت می‌کنه، همین. برای دیدن آمار بعداً باید از
+// SQL Editor خود Supabase استفاده کنی (فرانت‌اند اجازه‌ی خوندن نداره).
+(function() {
+  var SUPABASE_URL = 'https://fabrlmzwrnfsgbxunodk.supabase.co';
+  var SUPABASE_ANON_KEY = 'sb_publishable__nEiKozPyWrv3EF29jb_TQ_KXn-HSOi';
+  try {
+    fetch(SUPABASE_URL + '/rest/v1/cs_analytics', {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({
+        path: location.pathname,
+        referrer: document.referrer || null
+      }),
+      keepalive: true
+    }).catch(function() {});
+  } catch (e) {}
+})();
+
+// ── ثبت Service Worker (برای PWA / Add to Home Screen) ──
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('sw.js').catch(function() {
+      // اگه ثبت نشد (مثلاً هاست غیر-HTTPS)، سایت عادی کار می‌کنه، فقط بدون PWA
+    });
+  });
+}
+</script>
+</body>
+</html>
